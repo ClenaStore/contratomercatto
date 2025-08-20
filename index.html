@@ -62,7 +62,7 @@
   <header>
     <div class="brand">
       <!-- LOGO_DO_MERCATTO_AQUI: defina o src abaixo com a URL/arquivo da sua logo -->
-      <img id="logoPreview" src="" alt="https://github.com/ClenaStore/contratomercatto/blob/main/paste/Captura%20de%20tela%202025-06-23%20154635.png?raw=true"/>
+      <img id="logoPreview" src="" alt="Logo Mercatto Delícia"/>
       <div>
         <h1>Proposta de Evento • Mercatto Delícia</h1>
         <div class="muted">Gere um PDF estruturado, salve localmente e envie pelo WhatsApp.</div>
@@ -250,7 +250,7 @@
     <div class="kv"><strong>Buffet</strong><div id="p_buffet">—</div></div>
 
     <div class="hr"></div>
-    <div class="notice">Valores e itens sujeitos a disponibilidade. Proposta gerada eletronicamente, válida por 7 dias.</div>
+    
   </div>
 
   <div class="muted" style="margin-top:8px">Dica: após gerar, você pode editar os campos e gerar novamente um novo PDF.</div>
@@ -359,7 +359,11 @@
       <div class="row" style="margin-top:8px">
         <div style="flex:1">
           <label>Itens (um por linha)</label>
-          <textarea class="sec-itens" placeholder="Ex.:\nCoxinha\nFritas\nPastel\n..."></textarea>
+          <textarea class="sec-itens" placeholder="Ex.:
+Coxinha
+Fritas
+Pastel
+..."></textarea>
         </div>
       </div>`;
     el.addEventListener('click', (e)=>{ if(e.target?.dataset?.act==='rem') el.remove(); });
@@ -370,7 +374,8 @@
     return $$('#secoesWrap .section').map(sec=>({
       id: sec.dataset.id,
       titulo: sec.querySelector('.sec-titulo').value.trim(),
-      itens: sec.querySelector('.sec-itens').value.split('\n').map(s=>s.trim()).filter(Boolean)
+      itens: sec.querySelector('.sec-itens').value.split('
+').map(s=>s.trim()).filter(Boolean)
     }));
   }
   function renderSecoesToPDF(){
@@ -397,6 +402,26 @@
       }
       p_secoes.appendChild(box);
     });
+  }
+
+  // Função para LIMPAR todo o formulário após gerar o PDF
+  function clearForm(){
+    // campos básicos
+    ['evento','hora','sala','pessoas','localGeracao','valorPessoa','taxa','duracao','aluguel','incluso','datasPacotes','duracaoCafe','valorCafes','valorFechando','inclusoCafe','bebidas','buffet'].forEach(id=>{
+      const el=document.getElementById(id); if(el) el.value='';
+    });
+    // datas múltiplas
+    const wrap=document.getElementById('datasWrap'); if(wrap){ wrap.innerHTML=''; }
+    if(typeof addDataRow==='function') addDataRow();
+    // seções personalizadas
+    const secoesWrap=document.getElementById('secoesWrap'); if(secoesWrap){ secoesWrap.innerHTML=''; }
+    // feedback/calculo
+    const chip=document.getElementById('calcSaida'); if(chip){ chip.textContent='Total c/ taxa para o mínimo de pessoas: —'; }
+    // desabilitar botões de baixar/whats até nova geração
+    const b1=document.getElementById('btnBaixar'); const b2=document.getElementById('btnWhats');
+    if(b1) b1.disabled=true; if(b2) b2.disabled=true;
+    // resetar último PDF
+    if(typeof lastPdfBlob!=='undefined'){ lastPdfBlob=null; lastPdfName=null; }
   }
 
   // Montagem do PDF
@@ -492,7 +517,8 @@
     if(!datas.length) addDataRow(); else datas.forEach(addDataRow);
     // seções
     document.querySelectorAll('#secoesWrap .section').forEach(n=>n.remove());
-    (d.secoes||[]).forEach(s=>{ addSecao(s.titulo); const last=secoesWrap.lastElementChild; last.querySelector('.sec-itens').value=(s.itens||[]).join('\n'); });
+    (d.secoes||[]).forEach(s=>{ addSecao(s.titulo); const last=secoesWrap.lastElementChild; last.querySelector('.sec-itens').value=(s.itens||[]).join('
+'); });
     if(rec.logo){ document.getElementById('logoPreview').src = rec.logo; document.getElementById('pdfLogo').src = rec.logo; }
   }
   function salvar(){ const list=loadAll(); const rec=makeRecord(); list.unshift(rec); saveAll(list); return rec; }
@@ -538,7 +564,15 @@
   async function gerarPDF(){
     const res = await (async()=>{ montarPDFView(); const area=document.getElementById('pdf-area'); area.style.display=''; const canvas=await html2canvas(area,{scale:2, background:'#ffffff'}); const img=canvas.toDataURL('image/png'); const {jsPDF}=window.jspdf; const pdf=new jsPDF({unit:'pt',format:'a4',compress:true}); const pageWidth=pdf.internal.pageSize.getWidth(); const margin=24; const imgWidth=pageWidth-margin*2; const imgHeight=canvas.height*(imgWidth/canvas.width); pdf.addImage(img,'PNG',margin,margin,imgWidth,imgHeight,'','FAST'); const nome=`Proposta_Mercatto_${($('#evento').value||'Evento')}_${new Date().toISOString().slice(0,10)}.pdf`; lastPdfBlob=pdf.output('blob'); lastPdfName=nome; document.getElementById('btnBaixar').disabled=false; document.getElementById('btnWhats').disabled=false; area.style.display='none'; return {pdf,nome}; })(); return res; }
 
-  document.getElementById('btnGerar').addEventListener('click', async()=>{ document.getElementById('btnGerar').disabled=true; try{ await gerarPDF(); salvar(); } finally{ document.getElementById('btnGerar').disabled=false; } });
+  document.getElementById('btnGerar').addEventListener('click', async()=>{
+    const btn=document.getElementById('btnGerar');
+    btn.disabled=true;
+    try{
+      await gerarPDF();
+      salvar();
+      clearForm();
+    } finally { btn.disabled=false; }
+  });
   document.getElementById('btnBaixar').addEventListener('click', async()=>{ if(!lastPdfBlob){ await gerarPDF(); } const a=document.createElement('a'); const url=URL.createObjectURL(lastPdfBlob); a.href=url; a.download=lastPdfName||'Proposta_Mercatto.pdf'; document.body.appendChild(a); a.click(); a.remove(); setTimeout(()=>URL.revokeObjectURL(url),3000); });
   document.getElementById('btnWhats').addEventListener('click', async()=>{ if(!lastPdfBlob){ await gerarPDF(); } const file=new File([lastPdfBlob], lastPdfName||'Proposta_Mercatto.pdf', {type:'application/pdf'}); if(navigator.canShare && navigator.canShare({files:[file]})){ try{ await navigator.share({files:[file], title:'Proposta Mercatto Delícia', text:'Segue proposta em PDF.'}); return; }catch(err){} } const msg=encodeURIComponent(`Olá! Segue a proposta do evento "${$('#evento').value||''}". Baixe o PDF e anexe na conversa.`); const link=`https://wa.me/?text=${msg}`; window.open(link,'_blank'); alert('Não foi possível anexar o PDF automaticamente neste dispositivo. Baixe o arquivo e anexe manualmente no WhatsApp.'); });
 })();
