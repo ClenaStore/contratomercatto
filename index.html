@@ -62,7 +62,7 @@
   <header>
     <div class="brand">
       <!-- LOGO_DO_MERCATTO_AQUI: defina o src abaixo com a URL/arquivo da sua logo -->
-      <img id="logoPreview" src="" alt="https://github.com/ClenaStore/contratomercatto/blob/main/paste/Captura%20de%20tela%202025-06-23%20154635.png?raw=true"/>
+      <img id="logoPreview" src="" alt="Logo Mercatto Delícia"/>
       <div>
         <h1>Proposta de Evento • Mercatto Delícia</h1>
         <div class="muted">Gere um PDF estruturado, salve localmente e envie pelo WhatsApp.</div>
@@ -205,7 +205,7 @@
       <img id="pdfLogo" src="" alt="Logo" style="height:48px;width:auto;border:1px solid #e5e7eb;border-radius:8px;background:#fff"/>
       <div>
         <h2 style="margin:0">Mercatto Delícia • Proposta de Evento</h2>
-        <div class="Rua Ruy Barbosa, 1264 - Vila Regina, Barreiras - BA, 47804-040">Rua Ruy Barbosa, 1264 - Vila Regina, Barreiras - BA, 47804-040 <!-- 👉 Substitua este texto pelo endereço do Mercatto Delícia --></div>
+        <div class="muted">ENDERECO_MERCATTO_AQUI <!-- 👉 Substitua este texto pelo endereço do Mercatto Delícia --></div>
       </div>
       <div style="margin-left:auto;text-align:right">
         <div class="tag" id="pdfDataHora">—</div>
@@ -285,66 +285,54 @@
   };
   let lastPdfBlob = null, lastPdfName = null;
 
-  // Preencher com EXEMPLO
+  // ========== EXEMPLO ==========
   $('#btnExemplo').addEventListener('click', ()=>{
     $('#evento').value = 'Lucas';
     // datas múltiplas (exemplo)
-    $('#datasWrap').innerHTML='';
-    addDataRow('2025-09-02');
-    addDataRow('2025-10-03');
+    $('#datasWrap').innerHTML=''; addDataRow('2025-09-02'); addDataRow('2025-10-03');
     $('#hora').value = '19:00';
     $('#sala').value = 'Sala VIP 01';
     $('#pessoas').value = 50;
-    $('#valorPessoa').value = 69.90;
-    $('#taxa').value = 10;
-    $('#duracao').value = '2hrs';
-    $('#aluguel').value = 2500;
-    $('#incluso').value = 'Sala exclusiva, garçom, som, TV 86”, microfone sem fio';
-    $('#datasPacotes').value = '02-03/10, 27-28/10';
-    $('#duracaoCafe').value = '1h30';
-    $('#valorCafes').value = 21120;
-    $('#valorFechando').value = 22854;
-    $('#inclusoCafe').value = 'Sala exclusiva, garçom, som, TV 86”, microfone sem fio';
-    $('#bebidas').value = '';
-    $('#buffet').value = '';
+    $('#valorPessoa').value = 69.90; $('#taxa').value = 10; $('#duracao').value = '2hrs';
+    $('#aluguel').value = 2500; $('#incluso').value = 'Sala exclusiva, garçom, som, TV 86”, microfone sem fio';
+    $('#datasPacotes').value = '02-03/10, 27-28/10'; $('#duracaoCafe').value = '1h30';
+    $('#valorCafes').value = 21120; $('#valorFechando').value = 22854; $('#inclusoCafe').value = 'Sala exclusiva, garçom, som, TV 86”, microfone sem fio';
+    $('#bebidas').value = ''; $('#buffet').value = '';
     // seções exemplo (vazias, com placeholders)
-    document.querySelectorAll('#secoesWrap .section').forEach(n=>n.remove());
+    $$('#secoesWrap .section').forEach(n=>n.remove());
     addSecao('Entradas');
     addSecao('Pratos Principais');
   });
 
-  // Cálculo
+  // ========== CÁLCULO ==========
   function calcularTotal(){
     const pessoas = parseInt($('#pessoas').value||'0',10);
     const vlr = parseFloat($('#valorPessoa').value||'0');
     const taxa = parseFloat($('#taxa').value||'0')/100;
     const total = pessoas * (vlr * (1+taxa));
-    $('#calcSaida').textContent = `Total c/ taxa p/ ${pessoas} pessoas: ${fmtBR(total)}`;
+    $('#calcSaida').textContent = `Total c/ taxa p/ ${pessoas||0} pessoas: ${fmtBR(total)}`;
     return total;
   }
   $('#btnCalcular').addEventListener('click', calcularTotal);
 
-  // ====== DATAS MÚLTIPLAS ======
+  // ========== DATAS MÚLTIPLAS ==========
   function addDataRow(val=''){
-    const row=document.createElement('div');
-    row.className='row';
+    const row=document.createElement('div'); row.className='row';
     row.innerHTML=`<input type="date" class="data-item" value="${val}"> <button class="btn warn" type="button">Remover</button>`;
     row.querySelector('button').onclick=()=>row.remove();
     $('#datasWrap').appendChild(row);
   }
   function getDatas(){ return $$('#datasWrap .data-item').map(i=>i.value).filter(Boolean); }
   $('#btnAddData').addEventListener('click', ()=>addDataRow());
-  // cria pelo menos uma
+  // cria pelo menos uma entrada ao carregar
   addDataRow();
 
-  // ====== SEÇÕES PERSONALIZADAS ======
+  // ========== SEÇÕES PERSONALIZADAS ==========
   const secoesWrap = $('#secoesWrap');
   const p_secoes = $('#p_secoes');
   function addSecao(titulo=''){
     const id = 'sec_'+Date.now()+Math.random().toString(36).slice(2,7);
-    const el = document.createElement('div');
-    el.className = 'section';
-    el.dataset.id = id;
+    const el = document.createElement('div'); el.className = 'section'; el.dataset.id = id;
     el.innerHTML = `
       <div class="row">
         <div style="flex:1">
@@ -380,51 +368,37 @@ Pastel
   }
   function renderSecoesToPDF(){
     if(!p_secoes) return;
-    const sections = collectSecoes();
-    p_secoes.innerHTML = '';
+    const sections = collectSecoes(); p_secoes.innerHTML = '';
     sections.forEach(s=>{
-      const box = document.createElement('div');
-      box.style.margin = '10px 0';
-      const h = document.createElement('div');
-      h.className = 'section-highlight';
-      h.textContent = s.titulo || 'Seção';
-      box.appendChild(h);
+      const box = document.createElement('div'); box.style.margin = '10px 0';
+      const h = document.createElement('div'); h.className = 'section-highlight'; h.textContent = s.titulo || 'Seção'; box.appendChild(h);
       if(s.itens.length){
-        const ul = document.createElement('ul');
-        ul.style.margin = '8px 0 0 18px';
+        const ul = document.createElement('ul'); ul.style.margin = '8px 0 0 18px';
         s.itens.forEach(it=>{ const li=document.createElement('li'); li.textContent=it; ul.appendChild(li); });
         box.appendChild(ul);
-      }else{
-        const p = document.createElement('div');
-        p.className = 'muted';
-        p.textContent = 'Itens a definir';
-        box.appendChild(p);
+      } else {
+        const p = document.createElement('div'); p.className = 'muted'; p.textContent = 'Itens a definir'; box.appendChild(p);
       }
       p_secoes.appendChild(box);
     });
   }
 
-  // Função para LIMPAR todo o formulário após gerar o PDF
+  // ========== LIMPAR FORM ==========
   function clearForm(){
-    // campos básicos
     ['evento','hora','sala','pessoas','localGeracao','valorPessoa','taxa','duracao','aluguel','incluso','datasPacotes','duracaoCafe','valorCafes','valorFechando','inclusoCafe','bebidas','buffet'].forEach(id=>{
       const el=document.getElementById(id); if(el) el.value='';
     });
     // datas múltiplas
-    const wrap=document.getElementById('datasWrap'); if(wrap){ wrap.innerHTML=''; }
-    if(typeof addDataRow==='function') addDataRow();
+    const wrap=document.getElementById('datasWrap'); if(wrap){ wrap.innerHTML=''; addDataRow(); }
     // seções personalizadas
-    const secoesWrap=document.getElementById('secoesWrap'); if(secoesWrap){ secoesWrap.innerHTML=''; }
+    if(secoesWrap){ secoesWrap.innerHTML=''; }
     // feedback/calculo
-    const chip=document.getElementById('calcSaida'); if(chip){ chip.textContent='Total c/ taxa para o mínimo de pessoas: —'; }
-    // desabilitar botões de baixar/whats até nova geração
-    const b1=document.getElementById('btnBaixar'); const b2=document.getElementById('btnWhats');
-    if(b1) b1.disabled=true; if(b2) b2.disabled=true;
-    // resetar último PDF
-    if(typeof lastPdfBlob!=='undefined'){ lastPdfBlob=null; lastPdfName=null; }
+    const chip=$('#calcSaida'); if(chip){ chip.textContent='Total c/ taxa para o mínimo de pessoas: —'; }
+    // resetar último PDF e botões
+    lastPdfBlob=null; lastPdfName=null; $('#btnBaixar').disabled=true; $('#btnWhats').disabled=true;
   }
 
-  // Montagem do PDF
+  // ========== MONTAR PDF ==========
   function montarPDFView(){
     $('#pdfDataHora').textContent = 'Gerado em ' + todayBR();
     $('#pdfLocal').textContent = 'Local: ' + ($('#localGeracao').value||'—');
@@ -444,6 +418,7 @@ Pastel
     $('#p_taxa').textContent = `${isNaN(taxa)?'0':taxa.toLocaleString('pt-BR')}%`;
     $('#p_totalMin').textContent = fmtBR(totalMin);
     $('#p_aluguel').textContent = fmtBR(parseFloat($('#aluguel').value||'0'));
+
     $('#p_inclusoCafe').textContent = $('#inclusoCafe').value || '—';
     $('#p_datasPac').textContent = $('#datasPacotes').value || '—';
     $('#p_duracaoCafe').textContent = $('#duracaoCafe').value || '—';
@@ -453,15 +428,14 @@ Pastel
     $('#p_buffet').textContent = $('#buffet').value || '—';
 
     // logo do PDF usa o mesmo src do preview (defina no HTML)
-    document.getElementById('pdfLogo').src = document.getElementById('logoPreview').src || '';
+    $('#pdfLogo').src = $('#logoPreview').src || '';
 
     renderSecoesToPDF();
   }
 
   async function gerarPDF(){
     montarPDFView();
-    const area = document.getElementById('pdf-area');
-    area.style.display = '';
+    const area = $('#pdf-area'); area.style.display = '';
     const canvas = await html2canvas(area, {scale:2, background:'#ffffff'});
     const img = canvas.toDataURL('image/png');
     const { jsPDF } = window.jspdf;
@@ -474,22 +448,30 @@ Pastel
     const nome = `Proposta_Mercatto_${($('#evento').value||'Evento')}_${new Date().toISOString().slice(0,10)}.pdf`;
     lastPdfBlob = pdf.output('blob');
     lastPdfName = nome;
-    document.getElementById('btnBaixar').disabled = false;
-    document.getElementById('btnWhats').disabled = false;
+    $('#btnBaixar').disabled = false;
+    $('#btnWhats').disabled = false;
     area.style.display = 'none';
     return {pdf, nome};
   }
 
-  // ====== PERSISTÊNCIA LOCAL ======
+  // ========== PERSISTÊNCIA LOCAL ==========
   const STORE_KEY = 'mercatto_evento_propostas_v1';
   function loadAll(){ try{ return JSON.parse(localStorage.getItem(STORE_KEY)||'[]'); }catch(e){ return []; } }
   function saveAll(list){ localStorage.setItem(STORE_KEY, JSON.stringify(list)); }
+  function collectSecoes(){
+    return $$('#secoesWrap .section').map(sec=>({
+      id: sec.dataset.id,
+      titulo: sec.querySelector('.sec-titulo').value.trim(),
+      itens: sec.querySelector('.sec-itens').value.split('
+').map(s=>s.trim()).filter(Boolean)
+    }));
+  }
   function makeRecord(){
     return {
       id: Date.now().toString(36)+Math.random().toString(36).slice(2),
       createdAt: new Date().toISOString(),
       nome: ($('#evento').value||'Proposta')+ ' - ' + (new Date().toLocaleDateString('pt-BR')),
-      logo: (document.getElementById('logoPreview').src||''),
+      logo: ($('#logoPreview').src||''),
       data: {
         evento: $('#evento').value, datas: getDatas(), hora: $('#hora').value, sala: $('#sala').value,
         pessoas: $('#pessoas').value, local: $('#localGeracao').value,
@@ -516,17 +498,18 @@ Pastel
     const datas = Array.isArray(d.datas)? d.datas : (d.data? [d.data] : []);
     if(!datas.length) addDataRow(); else datas.forEach(addDataRow);
     // seções
-    document.querySelectorAll('#secoesWrap .section').forEach(n=>n.remove());
+    $$('#secoesWrap .section').forEach(n=>n.remove());
     (d.secoes||[]).forEach(s=>{ addSecao(s.titulo); const last=secoesWrap.lastElementChild; last.querySelector('.sec-itens').value=(s.itens||[]).join('
 '); });
-    if(rec.logo){ document.getElementById('logoPreview').src = rec.logo; document.getElementById('pdfLogo').src = rec.logo; }
+    if(rec.logo){ $('#logoPreview').src = rec.logo; $('#pdfLogo').src = rec.logo; }
   }
   function salvar(){ const list=loadAll(); const rec=makeRecord(); list.unshift(rec); saveAll(list); return rec; }
 
   // UI salvar/abrir
-  document.getElementById('btnSalvar').addEventListener('click', ()=>{ const rec=salvar(); alert('Proposta salva localmente: '+rec.nome); });
-  const modal = document.getElementById('savedModal');
-  const listaSalvos = document.getElementById('listaSalvos');
+  $('#btnSalvar').addEventListener('click', ()=>{ const rec=salvar(); alert('Proposta salva localmente: '+rec.nome); });
+
+  const modal = $('#savedModal');
+  const listaSalvos = $('#listaSalvos');
   function openModal(){
     listaSalvos.innerHTML = '';
     const list = loadAll();
@@ -558,23 +541,41 @@ Pastel
     });
     modal.style.display='flex';
   }
-  document.getElementById('btnAbrirSalvos').addEventListener('click', openModal);
-  document.getElementById('btnFecharModal').addEventListener('click', ()=> modal.style.display='none');
+  $('#btnAbrirSalvos').addEventListener('click', openModal);
+  $('#btnFecharModal').addEventListener('click', ()=> modal.style.display='none');
 
-  async function gerarPDF(){
-    const res = await (async()=>{ montarPDFView(); const area=document.getElementById('pdf-area'); area.style.display=''; const canvas=await html2canvas(area,{scale:2, background:'#ffffff'}); const img=canvas.toDataURL('image/png'); const {jsPDF}=window.jspdf; const pdf=new jsPDF({unit:'pt',format:'a4',compress:true}); const pageWidth=pdf.internal.pageSize.getWidth(); const margin=24; const imgWidth=pageWidth-margin*2; const imgHeight=canvas.height*(imgWidth/canvas.width); pdf.addImage(img,'PNG',margin,margin,imgWidth,imgHeight,'','FAST'); const nome=`Proposta_Mercatto_${($('#evento').value||'Evento')}_${new Date().toISOString().slice(0,10)}.pdf`; lastPdfBlob=pdf.output('blob'); lastPdfName=nome; document.getElementById('btnBaixar').disabled=false; document.getElementById('btnWhats').disabled=false; area.style.display='none'; return {pdf,nome}; })(); return res; }
-
-  document.getElementById('btnGerar').addEventListener('click', async()=>{
-    const btn=document.getElementById('btnGerar');
+  // ========== AÇÕES PRINCIPAIS ==========
+  $('#btnGerar').addEventListener('click', async()=>{
+    const btn=$('#btnGerar');
     btn.disabled=true;
     try{
       await gerarPDF();
       salvar();
       clearForm();
+    } catch(err){
+      console.error('Falha ao gerar PDF:', err);
+      alert('Ocorreu um erro ao gerar o PDF. Tente novamente.');
     } finally { btn.disabled=false; }
   });
-  document.getElementById('btnBaixar').addEventListener('click', async()=>{ if(!lastPdfBlob){ await gerarPDF(); } const a=document.createElement('a'); const url=URL.createObjectURL(lastPdfBlob); a.href=url; a.download=lastPdfName||'Proposta_Mercatto.pdf'; document.body.appendChild(a); a.click(); a.remove(); setTimeout(()=>URL.revokeObjectURL(url),3000); });
-  document.getElementById('btnWhats').addEventListener('click', async()=>{ if(!lastPdfBlob){ await gerarPDF(); } const file=new File([lastPdfBlob], lastPdfName||'Proposta_Mercatto.pdf', {type:'application/pdf'}); if(navigator.canShare && navigator.canShare({files:[file]})){ try{ await navigator.share({files:[file], title:'Proposta Mercatto Delícia', text:'Segue proposta em PDF.'}); return; }catch(err){} } const msg=encodeURIComponent(`Olá! Segue a proposta do evento "${$('#evento').value||''}". Baixe o PDF e anexe na conversa.`); const link=`https://wa.me/?text=${msg}`; window.open(link,'_blank'); alert('Não foi possível anexar o PDF automaticamente neste dispositivo. Baixe o arquivo e anexe manualmente no WhatsApp.'); });
+
+  $('#btnBaixar').addEventListener('click', async()=>{
+    try{
+      if(!lastPdfBlob){ await gerarPDF(); }
+      const a=document.createElement('a'); const url=URL.createObjectURL(lastPdfBlob);
+      a.href=url; a.download=lastPdfName||'Proposta_Mercatto.pdf'; document.body.appendChild(a); a.click(); a.remove();
+      setTimeout(()=>URL.revokeObjectURL(url),3000);
+    }catch(err){ alert('Não foi possível baixar agora. Gere o PDF novamente.'); }
+  });
+
+  $('#btnWhats').addEventListener('click', async()=>{
+    if(!lastPdfBlob){ await gerarPDF(); }
+    const file=new File([lastPdfBlob], lastPdfName||'Proposta_Mercatto.pdf', {type:'application/pdf'});
+    if(navigator.canShare && navigator.canShare({files:[file]})){
+      try{ await navigator.share({files:[file], title:'Proposta Mercatto Delícia', text:'Segue proposta em PDF.'}); return; }catch(err){}
+    }
+    const msg=encodeURIComponent(`Olá! Segue a proposta do evento "${$('#evento').value||''}". Baixe o PDF e anexe na conversa.`);
+    const link=`https://wa.me/?text=${msg}`; window.open(link,'_blank');
+  });
 })();
 </script>
 </body>
