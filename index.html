@@ -391,7 +391,11 @@
       <div class="row" style="margin-top:8px">
         <div style="flex:1">
           <label>Itens (um por linha; deixe em branco para preencher depois)</label>
-          <textarea class="sec-itens" placeholder="Ex.:\nCoxinha\nFritas\nPastel\n..."></textarea>
+          <textarea class="sec-itens" placeholder="Ex.:
+Coxinha
+Fritas
+Pastel
+..."></textarea>
         </div>
       </div>`;
     el.addEventListener('click', (e)=>{
@@ -409,7 +413,8 @@
     return $$('#secoesWrap .section').map(sec=>({
       id: sec.dataset.id,
       titulo: sec.querySelector('.sec-titulo').value.trim(),
-      itens: sec.querySelector('.sec-itens').value.split('\n').map(s=>s.trim()).filter(Boolean)
+      itens: sec.querySelector('.sec-itens').value.split('
+').map(s=>s.trim()).filter(Boolean)
     }));
   }
   function renderSecoesToPDF(){
@@ -580,7 +585,8 @@
     (d.secoes||[]).forEach(s=>{
       addSecao(s.titulo);
       const last = secoesWrap.lastElementChild;
-      last.querySelector('.sec-itens').value = (s.itens||[]).join('\n');
+      last.querySelector('.sec-itens').value = (s.itens||[]).join('
+');
     });
     if(rec.logo){ document.querySelector('#logoPreview').src = rec.logo; document.querySelector('#pdfLogo').src = rec.logo; }
   }
