@@ -3,637 +3,212 @@
 <head>
 <meta charset="utf-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>Painel • Proposta de Evento (PDF + WhatsApp)</title>
-<!-- INSTRUÇÕES
-1) Troque a LOGO no topo (arquivo ou URL) — procure por LOGO_DO_MERCATTO_AQUI
-2) Troque o ENDEREÇO no PDF — procure por ENDERECO_MERCATTO_AQUI
-3) As "Seções personalizadas" permitem criar cabeçalhos (Entradas, Pratos Principais, etc.) com itens em branco.
-4) Clique em Salvar para guardar localmente (localStorage) e Abrir salvos para reabrir/editar depois.
--->
+<title>Proposta de Evento • Mercatto Delícia</title>
 <style>
-  :root{
-    --bg:#0f0f10; --panel:#141414; --line:#2a2a2a; --text:#f4f6fb; --muted:#cfcfcf; --brand:#2563eb; --ok:#16a34a; --warn:#f59e0b; --danger:#ef4444;
-  }
+  :root{ --bg:#0f0f10; --panel:#141414; --line:#2a2a2a; --text:#f4f6fb; --muted:#cfcfcf; --brand:#2563eb; --ok:#16a34a; --warn:#f59e0b; }
   *{box-sizing:border-box}
   body{margin:0;background:var(--bg);color:var(--text);font-family:Inter,ui-sans-serif,system-ui,Segoe UI,Roboto,Arial,Helvetica}
   .wrap{max-width:1100px;margin:0 auto;padding:24px}
-  header{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:18px}
-  header .brand{display:flex;align-items:center;gap:14px}
-  header img{height:56px;width:auto;border-radius:10px;background:#fff;object-fit:contain;border:1px solid var(--line)}
-  h1{font-size:1.4rem;margin:0}
   .card{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:16px;margin-bottom:16px;box-shadow:0 6px 20px rgba(0,0,0,.25)}
-  .grid{display:grid;gap:12px}
-  .g2{grid-template-columns:repeat(2,minmax(0,1fr))}
-  .g3{grid-template-columns:repeat(3,minmax(0,1fr))}
+  h1{font-size:1.4rem;margin:0 0 10px}
   label{display:block;font-size:.92rem;margin-bottom:6px;color:var(--muted)}
-  input,select,textarea{width:100%;padding:10px 12px;border-radius:12px;border:1px solid var(--line);background:#0c0c0c;color:var(--text)}
+  input,textarea{width:100%;padding:10px 12px;border-radius:12px;border:1px solid var(--line);background:#0c0c0c;color:var(--text)}
   textarea{min-height:90px;resize:vertical}
   .row{display:flex;gap:10px;align-items:center}
-  .btn{display:inline-flex;align-items:center;gap:8px;border:1px solid var(--line);background:#0d1117;color:var(--text);padding:10px 14px;border-radius:12px;cursor:pointer}
-  .btn.primary{background:var(--brand);border-color:transparent}
-  .btn.ok{background:var(--ok);border-color:transparent}
-  .btn.warn{background:var(--warn);border-color:transparent}
-  .btn.danger{background:var(--danger);border-color:transparent}
-  .btn.ghost{background:#151a22}
-  .btn:disabled{opacity:.6;cursor:not-allowed}
-  .section-title{font-weight:700;margin:8px 0 10px}
-  .chips{display:flex;flex-wrap:wrap;gap:8px}
-  .chip{padding:6px 10px;border:1px solid var(--line);border-radius:40px;background:#0e121a}
-  .right{margin-left:auto}
-  .muted{color:var(--muted);font-size:.9rem}
-  .list{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
-  .hr{height:1px;background:var(--line);margin:10px 0}
-  /* Área a ser exportada em PDF */
-  #pdf-area{background:#ffffff;color:#0b0b0e;border:1px solid #e5e7eb;border-radius:12px;padding:24px}
+  .btn{padding:10px 14px;border-radius:12px;cursor:pointer;border:1px solid var(--line);background:#0d1117;color:var(--text)}
+  .btn.primary{background:var(--brand);color:#fff;border:none}
+  .btn.ok{background:var(--ok);color:#fff;border:none}
+  .btn.warn{background:var(--warn);color:#000;border:none}
+  #pdf-area{background:#fff;color:#000;padding:24px;border-radius:12px}
   #pdf-area h2{margin:0 0 6px}
-  #pdf-area .muted{color:#4b5563}
-  #pdf-area .kv{display:grid;grid-template-columns:160px 1fr;gap:8px;margin:6px 0}
-  #pdf-area .tag{display:inline-block;padding:3px 8px;border-radius:999px;background:#eef2ff;color:#1e3a8a;border:1px solid #c7d2fe;font-size:.85rem}
-  #pdf-area table{width:100%;border-collapse:collapse;margin-top:6px}
-  #pdf-area th,#pdf-area td{border:1px solid #e5e7eb;padding:8px;text-align:left}
-  #pdf-area .t-right{text-align:right}
-  .footnote{font-size:.85rem;color:#475569;margin-top:10px}
-  .notice{padding:8px 12px;border-left:4px solid #3b82f6;background:#eff6ff;color:#1e3a8a;border-radius:8px}
-  /* Destaque de seções no PDF */
-  .section-highlight{background:#f1f5ff;border:1px solid #c7d2fe;color:#1e3a8a;padding:6px 10px;border-radius:10px;font-weight:700}
-  .section{border:1px dashed var(--line);border-radius:12px;padding:12px;margin-top:10px}
-  .section .row{align-items:flex-start}
+  #pdf-area .section-title{margin-top:16px;margin-bottom:6px;font-weight:bold;font-size:1.1rem;border-bottom:2px solid #000;padding-bottom:4px}
 </style>
 </head>
 <body>
 <div class="wrap">
-  <header>
-    <div class="brand">
-      <!-- LOGO_DO_MERCATTO_AQUI: Substitua o src abaixo pela URL do arquivo da LOGO -->
-      <img id="logoPreview" src="" alt="Logo Mercatto Delícia"/>
-      <div>
-        <h1>Proposta de Evento • Mercatto Delícia</h1>
-        <div class="muted">Gere um PDF estruturado, salve localmente e envie pelo WhatsApp.</div>
-      </div>
-    </div>
-    <div class="row">
-      <input type="file" id="logoFile" accept="image/*"/>
-      <button class="btn ghost" id="btnExemplo">Preencher com exemplo</button>
-    </div>
-  </header>
+  <h1>Proposta de Evento • Mercatto Delícia</h1>
 
   <div class="card">
-    <div class="section-title">Identificação</div>
-    <div class="grid g3">
-      <div>
-        <label>Evento</label>
-        <input id="evento" placeholder="Ex.: Lucas"/>
+    <label>Evento</label><input id="evento" placeholder="Ex.: Lucas"/>
+    <label>Datas do evento (uma ou mais)</label>
+    <div id="datasWrap" style="display:grid;gap:8px"></div>
+    <button class="btn" id="btnAddData" type="button">+ Adicionar data</button>
+    <div class="row" style="margin-top:10px">
+      <div style="flex:1">
+        <label>Hora</label><input id="hora" type="time"/>
       </div>
-      <div>
-        <label>Data</label>
-        <input id="data" type="date"/>
+      <div style="flex:1">
+        <label>Sala</label><input id="sala" placeholder="Sala VIP 01"/>
       </div>
-      <div>
-        <label>Hora</label>
-        <input id="hora" type="time"/>
-      </div>
-    </div>
-    <div class="grid g3" style="margin-top:10px">
-      <div>
-        <label>Sala</label>
-        <input id="sala" placeholder="Ex.: Sala VIP 01"/>
-      </div>
-      <div>
-        <label>Pessoas (mínimo)</label>
-        <input id="pessoas" type="number" min="1" value="50"/>
-      </div>
-      <div>
-        <label>Local de geração (cidade/loja)</label>
-        <input id="localGeracao" placeholder="Ex.: Salvador/BA"/>
+      <div style="flex:1">
+        <label>Pessoas (mínimo)</label><input id="pessoas" type="number" min="1"/>
       </div>
     </div>
-    <div class="hr"></div>
-    <div class="grid g2">
-      <div>
-        <label>Valor por pessoa (R$)</label>
-        <input id="valorPessoa" type="number" step="0.01" value="69.90"/>
-      </div>
-      <div>
-        <label>Taxa adicional (%)</label>
-        <input id="taxa" type="number" step="0.01" value="10"/>
-      </div>
-    </div>
-    <div class="grid g3" style="margin-top:10px">
-      <div>
-        <label>Duração do pacote</label>
-        <input id="duracao" placeholder="Ex.: 2h" value="2hrs"/>
-      </div>
-      <div>
-        <label>Opção alternativa (aluguel espaço) – R$</label>
-        <input id="aluguel" type="number" step="0.01" value="2500"/>
-      </div>
-      <div>
-        <label>Incluso</label>
-        <input id="incluso" placeholder="Sala exclusiva, garçom, som, TV 86”, microfone sem fio"/>
-      </div>
-    </div>
+    <label>Local de geração</label><input id="localGeracao" placeholder="Ex.: Salvador/BA"/>
   </div>
 
   <div class="card">
-    <div class="section-title">Entradas servidas na palestra (atalhos)</div>
-    <div class="list" id="listaEntradas">
-      <label><input type="checkbox" value="Suco de laranja"/> Suco de laranja</label>
-      <label><input type="checkbox" value="Água"/> Água</label>
-      <label><input type="checkbox" value="Refrigerantes (Coca/Guaraná)"/> Refrigerantes (Coca/Guaraná)</label>
-      <label><input type="checkbox" value="Salgadinhos"/> Salgadinhos</label>
-      <label><input type="checkbox" value="Coxinha"/> Coxinha</label>
-      <label><input type="checkbox" value="Fritas"/> Fritas</label>
-      <label><input type="checkbox" value="Pastel"/> Pastel</label>
-      <label><input type="checkbox" value="Frios"/> Frios</label>
-      <label><input type="checkbox" value="Pão de queijo"/> Pão de queijo</label>
-      <label><input type="checkbox" value="Biscoitos"/> Biscoitos</label>
+    <div class="row" style="justify-content:space-between">
+      <label style="margin:0">Entradas (itens em blocos)</label>
+      <button class="btn" id="btnAddEntrada" type="button">+ Adicionar item</button>
     </div>
-    <div style="margin-top:10px">
-      <label>Observações / Itens extras</label>
-      <textarea id="obs"></textarea>
-    </div>
-  </div>
+    <div id="entradasWrap" style="display:grid;gap:8px"></div>
 
-  <div class="card">
-    <div class="section-title">Pacotes – Café (manhã/tarde)</div>
-    <div class="muted">Monte o buffet, datas e valores destes pacotes opcionais.</div>
-    <div class="grid g2" style="margin-top:10px">
-      <div>
-        <label>Datas sugeridas</label>
-        <input id="datasPacotes" placeholder="Ex.: 02-03/10, 27-28/10"/>
-      </div>
-      <div>
-        <label>Duração</label>
-        <input id="duracaoCafe" placeholder="1h30" value="1h30"/>
-      </div>
-    </div>
-    <div class="grid g3" style="margin-top:10px">
-      <div>
-        <label>Valor pacote (ex.: 8 cafés / 30 pessoas)</label>
-        <input id="valorCafes" type="number" step="0.01" value="21120"/>
-      </div>
-      <div>
-        <label>Fechando 5 datas (valor)</label>
-        <input id="valorFechando" type="number" step="0.01" value="22854"/>
-      </div>
-      <div>
-        <label>Incluso (café)</label>
-        <input id="inclusoCafe" placeholder="Sala exclusiva, garçom, som, TV 86”, microfone sem fio"/>
-      </div>
-    </div>
-    <div class="hr"></div>
-    <div class="grid g2">
-      <div>
-        <label>Bebidas</label>
-        <textarea id="bebidas">Café; Leite; Suco de laranja; Água; Refrigerantes (Coca/Guaraná)</textarea>
-      </div>
-      <div>
-        <label>Buffet</label>
-        <textarea id="buffet">Farofa de carne de sol; Farofa de calabresa com queijo; Salsicha; Calabresa acebolada; Ovos mexidos; Frango desfiado; Banana frita; Salgadinhos (coxinha, quibe, pastel de carne); Sanduíches (pães francês, forma, delícia, brioche, integral) – recheios: frango, mortadela, presunto, requeijão, peito de peru; Salada de frutas; Tábua de frios (presunto, peito de peru, mussarela, queijo branco); Patês diversos; Manteiga; Fritas; Pães diversos; Pão de queijo e biscoitos; Roscas diversas; Bolos simples e de cobertura; Tortas recheadas e confeitadas; Pavê de chocolate; Omelete de frios; Toast de fermentação natural; Croissant (frango/peito de peru/presunto); Pão italiano de frios premium; Tábua de frios premium (acrescenta salaminho, polenguinho, uvas); Brigadeiro e beijinho.</textarea>
-      </div>
-    </div>
-  </div>
-
-  <!-- Seções personalizadas -->
-  <div class="card">
-    <div class="section-title">Seções personalizadas (cabeçalhos + itens)</div>
-    <div class="muted">Crie blocos como <em>Entradas</em>, <em>Pratos Principais</em>, <em>Bebidas</em>, etc. Os itens iniciam em branco para preencher aos poucos e sairão destacados no PDF.</div>
-    <div class="row" style="margin-top:8px">
-      <input id="secTitulo" placeholder="Ex.: Entradas ou Pratos principais"/>
-      <button class="btn" id="btnAddSec">Adicionar seção</button>
-    </div>
-    <div id="secoesWrap"></div>
+    <label style="margin-top:12px">Pratos principais</label><textarea id="principais" placeholder="Um por linha (opcional)"></textarea>
+    <label>Acompanhamentos</label><textarea id="acompanhamentos" placeholder="Um por linha (opcional)"></textarea>
+    <label>Sobremesas</label><textarea id="sobremesas" placeholder="Um por linha (opcional)"></textarea>
+    <label>Bebidas</label><textarea id="bebidas" placeholder="Um por linha (opcional)"></textarea>
   </div>
 
   <div class="card">
     <div class="row">
-      <button class="btn" id="btnCalcular">Calcular total</button>
-      <button class="btn ghost" id="btnSalvar">Salvar proposta</button>
-      <button class="btn ghost" id="btnAbrirSalvos">Abrir salvos</button>
-      <div class="chip" id="calcSaida">Total c/ taxa para o mínimo de pessoas: —</div>
-      <div class="right"></div>
-      <button class="btn primary" id="btnGerar">Gerar PDF</button>
-      <button class="btn ok" id="btnBaixar" disabled>Baixar PDF</button>
-      <button class="btn warn" id="btnWhats" disabled>Enviar pelo WhatsApp</button>
-    </div>
-    <div class="muted" style="margin-top:8px">O PDF inclui logo, endereço, data/hora e local de geração automaticamente. Os dados podem ser salvos localmente e reabertos depois.</div>
-  </div>
-
-  <!-- Área oculta que será renderizada no PDF -->
-  <div id="pdf-area" class="card" style="display:none">
-    <div style="display:flex;align-items:center;gap:12px">
-      <img id="pdfLogo" src="" alt="Logo" style="height:48px;width:auto;border:1px solid #e5e7eb;border-radius:8px;background:#fff"/>
-      <div>
-        <h2 style="margin:0">Mercatto Delícia • Proposta de Evento</h2>
-        <div class="muted">ENDERECO_MERCATTO_AQUI <!-- 👉 Substitua este texto pelo endereço do Mercatto Delícia --></div>
+      <div style="flex:1">
+        <label>Valor por pessoa (R$)</label><input id="valorPessoa" type="number" step="0.01"/>
       </div>
-      <div style="margin-left:auto;text-align:right">
-        <div class="tag" id="pdfDataHora">—</div>
-        <div class="muted" id="pdfLocal">Local: —</div>
+      <div style="flex:1">
+        <label>Taxa adicional (%)</label><input id="taxa" type="number" step="0.01"/>
+      </div>
+      <div style="flex:1">
+        <label>Opção aluguel espaço (R$)</label><input id="aluguel" type="number" step="0.01"/>
       </div>
     </div>
-
-    <div class="hr"></div>
-
-    <div class="kv"><strong>Evento</strong><div id="p_evento">—</div></div>
-    <div class="kv"><strong>Data</strong><div id="p_data">—</div></div>
-    <div class="kv"><strong>Hora</strong><div id="p_hora">—</div></div>
-    <div class="kv"><strong>Sala</strong><div id="p_sala">—</div></div>
-    <div class="kv"><strong>Pessoas (mínimo)</strong><div id="p_pessoas">—</div></div>
-
-    <div class="hr"></div>
-    <h3 style="margin:6px 0">Entradas da Palestra</h3>
-    <div id="p_entradas">—</div>
-    <div class="footnote" id="p_obs"></div>
-
-    <div class="hr"></div>
-    <h3 style="margin:6px 0">Valores</h3>
-    <table>
-      <thead><tr><th>Descrição</th><th class="t-right">Valor (R$)</th></tr></thead>
-      <tbody>
-        <tr><td>Valor por pessoa</td><td class="t-right" id="p_vlrPessoa">—</td></tr>
-        <tr><td>Taxa adicional</td><td class="t-right" id="p_taxa">—</td></tr>
-        <tr><td><strong>Total (mínimo de pessoas)</strong></td><td class="t-right" id="p_totalMin"><strong>—</strong></td></tr>
-        <tr><td>Opção alternativa: aluguel do espaço (2h, sem comidas/bebidas)</td><td class="t-right" id="p_aluguel">—</td></tr>
-      </tbody>
-    </table>
-    <div class="footnote">Incluso: <span id="p_incluso">—</span>. Duração do pacote: <span id="p_duracao">—</span>.</div>
-
-    <div class="hr"></div>
-    <h3 style="margin:6px 0">Pacotes – Café</h3>
-    <div class="kv"><strong>Datas sugeridas</strong><div id="p_datasPac">—</div></div>
-    <div class="kv"><strong>Duração</strong><div id="p_duracaoCafe">—</div></div>
-    <table>
-      <thead><tr><th>Descrição</th><th class="t-right">Valor (R$)</th></tr></thead>
-      <tbody>
-        <tr><td>Pacote (ex.: 8 cafés / 30 pessoas)</td><td class="t-right" id="p_valorCafes">—</td></tr>
-        <tr><td>Fechando 5 datas</td><td class="t-right" id="p_valorFechando">—</td></tr>
-      </tbody>
-    </table>
-    <div class="kv"><strong>Incluso</strong><div id="p_inclusoCafe">—</div></div>
-    <div class="kv"><strong>Bebidas</strong><div id="p_bebidas">—</div></div>
-    <div class="kv"><strong>Buffet</strong><div id="p_buffet">—</div></div>
-
-    <!-- Seções renderizadas no PDF -->
-    <div class="hr"></div>
-    <h3 style="margin:6px 0">Seções do Evento</h3>
-    <div id="p_secoes"></div>
-
-    <div class="hr"></div>
-    <div class="notice">Valores e itens sujeitos a disponibilidade. Proposta gerada eletronicamente, válida por 7 dias.</div>
   </div>
 
-  <div class="muted" style="margin-top:8px">Dica: após gerar, você pode editar os campos e gerar novamente um novo PDF.</div>
+  <div class="card">
+    <button class="btn primary" id="btnGerar">Gerar PDF</button>
+    <button class="btn ok" id="btnBaixar" disabled>Baixar PDF</button>
+    <button class="btn warn" id="btnWhats" disabled>Enviar WhatsApp</button>
+  </div>
+
+  <!-- PDF -->
+  <div id="pdf-area" style="display:none">
+    <h2>Mercatto Delícia</h2>
+    <div id="pdfDataHora"></div>
+    <div id="pdfLocal"></div>
+
+    <div class="section-title">Evento</div>
+    <p><strong>Nome:</strong> <span id="p_evento"></span></p>
+    <p><strong>Datas:</strong> <span id="p_datas"></span></p>
+    <p><strong>Hora:</strong> <span id="p_hora"></span></p>
+    <p><strong>Sala:</strong> <span id="p_sala"></span></p>
+    <p><strong>Pessoas:</strong> <span id="p_pessoas"></span></p>
+
+    <div class="section-title">Entradas</div>
+    <ul id="p_entradas" style="margin:0 0 10px 18px"></ul>
+    <div class="section-title">Pratos principais</div>
+    <p id="p_principais"></p>
+    <div class="section-title">Acompanhamentos</div>
+    <p id="p_acompanhamentos"></p>
+    <div class="section-title">Sobremesas</div>
+    <p id="p_sobremesas"></p>
+    <div class="section-title">Bebidas</div>
+    <p id="p_bebidas"></p>
+
+    <div class="section-title">Valores</div>
+    <p><strong>Valor por pessoa:</strong> <span id="p_valorPessoa"></span></p>
+    <p><strong>Taxa adicional:</strong> <span id="p_taxa"></span></p>
+    <p><strong>Total mínimo:</strong> <span id="p_total"></span></p>
+    <p><strong>Aluguel espaço:</strong> <span id="p_aluguel"></span></p>
+  </div>
 </div>
 
-<!-- libs para PDF -->
 <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
-
-<!-- Modal de salvos -->
-<div id="savedModal" style="position:fixed;inset:0;display:none;background:rgba(0,0,0,.55);backdrop-filter:blur(2px);align-items:center;justify-content:center;z-index:50">
-  <div style="background:#11151d;border:1px solid var(--line);border-radius:14px;min-width:70%;max-width:900px;padding:16px">
-    <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">
-      <h3 style="margin:0">Propostas salvas localmente</h3>
-      <div class="right"></div>
-      <button class="btn" id="btnFecharModal">Fechar</button>
-    </div>
-    <div class="muted">Os dados ficam salvos neste navegador (localStorage). Você pode reabrir para editar/gerar novamente.</div>
-    <div id="listaSalvos" style="margin-top:10px;display:grid;gap:8px"></div>
-  </div>
-</div>
-
 <script>
-(function(){
-  const $ = (s)=>document.querySelector(s);
-  const $$ = (s)=>Array.from(document.querySelectorAll(s));
-  const fmtBR = (n)=> (isNaN(n)? '—' : n.toLocaleString('pt-BR',{style:'currency',currency:'BRL'}));
-  const todayBR = ()=>{
-    const now = new Date();
-    const pad = (x)=> String(x).padStart(2,'0');
-    return `${pad(now.getDate())}/${pad(now.getMonth()+1)}/${now.getFullYear()} ${pad(now.getHours())}:${pad(now.getMinutes())}`;
-  };
-  let lastPdfBlob = null, lastPdfName = null;
+const $ = (s)=>document.querySelector(s);
+const $$ = (s)=>Array.from(document.querySelectorAll(s));
+let lastPdfBlob=null,lastPdfName=null;
 
-  // LOGO preview & uso no PDF
-  const logoFile = $('#logoFile');
-  const logoPrev = $('#logoPreview');
-  const pdfLogo = $('#pdfLogo');
-  logoFile.addEventListener('change', (e)=>{
-    const file = e.target.files[0];
-    if(!file) return;
-    const reader = new FileReader();
-    reader.onload = ()=>{ logoPrev.src = reader.result; pdfLogo.src = reader.result; };
-    reader.readAsDataURL(file);
-  });
+// ===== Datas múltiplas =====
+function addDataRow(val=''){
+  const row=document.createElement('div');
+  row.className='row';
+  row.innerHTML=`<input type="date" class="data-item" value="${val}"> <button class="btn warn" type="button">Remover</button>`;
+  row.querySelector('button').onclick=()=>row.remove();
+  $('#datasWrap').appendChild(row);
+}
+function getDatas(){ return $$('.data-item').map(i=>i.value).filter(Boolean); }
 
-  // Preencher com EXEMPLO do enunciado
-  $('#btnExemplo').addEventListener('click', ()=>{
-    $('#evento').value = 'Lucas';
-    $('#data').value = '2025-09-02';
-    $('#hora').value = '19:00';
-    $('#sala').value = 'Sala VIP 01';
-    $('#pessoas').value = 50;
-    document.querySelectorAll('#listaEntradas input[type=checkbox]').forEach((cb)=>{
-      const want = ['Suco de laranja','Água','Refrigerantes (Coca/Guaraná)','Salgadinhos','Coxinha','Fritas','Pastel','Frios','Pão de queijo','Biscoitos'];
-      cb.checked = want.includes(cb.value);
-    });
-    $('#valorPessoa').value = 69.90;
-    $('#taxa').value = 10;
-    $('#duracao').value = '2hrs';
-    $('#aluguel').value = 2500;
-    $('#incluso').value = 'Sala exclusiva, garçom, som, TV 86”, microfone sem fio';
-    $('#obs').value = '';
-    $('#datasPacotes').value = '02-03/10, 27-28/10';
-    $('#duracaoCafe').value = '1h30';
-    $('#valorCafes').value = 21120;
-    $('#valorFechando').value = 22854;
-    $('#inclusoCafe').value = 'Sala exclusiva, garçom, som, TV 86”, microfone sem fio';
-    $('#bebidas').value = 'Café; Leite; Suco de laranja; Água; Refrigerantes (Coca/Guaraná)';
-    $('#buffet').value = 'Farofa de carne de sol; Farofa de calabresa com queijo; Salsicha; Calabresa acebolada; Ovos mexidos; Frango desfiado; Banana frita; Salgadinhos (coxinha, quibe, pastel de carne); Sanduíches (pães francês, forma, delícia, brioche, integral) – recheios: frango, mortadela, presunto, requeijão, peito de peru; Salada de frutas; Tábua de frios (presunto, peito de peru, mussarela, queijo branco); Patês diversos; Manteiga; Fritas; Pães diversos; Pão de queijo e biscoitos; Roscas diversas; Bolos simples e de cobertura; Tortas recheadas e confeitadas; Pavê de chocolate; Omelete de frios; Toast de fermentação natural; Croissant (frango/peito de peru/presunto); Pão italiano de frios premium; Tábua de frios premium (acrescenta salaminho, polenguinho, uvas); Brigadeiro e beijinho.';
-    // Seções exemplo em branco
-    document.querySelectorAll('#secoesWrap .section').forEach(n=>n.remove());
-    addSecao('Entradas');
-    addSecao('Pratos Principais');
-    addSecao('Bebidas');
-  });
+// ===== Entradas (blocos) =====
+function addEntradaRow(val=''){
+  const row=document.createElement('div');
+  row.className='row';
+  row.innerHTML=`<input class="entrada-item" placeholder="Ex.: Coxinha / Pastel / Fritas" value="${val}"> <button class="btn warn" type="button">Remover</button>`;
+  row.querySelector('button').onclick=()=>row.remove();
+  $('#entradasWrap').appendChild(row);
+}
+function getEntradas(){ return $$('.entrada-item').map(i=>i.value.trim()).filter(Boolean); }
 
-  // Cálculo
-  function calcularTotal(){
-    const pessoas = parseInt($('#pessoas').value||'0',10);
-    const vlr = parseFloat($('#valorPessoa').value||'0');
-    const taxa = parseFloat($('#taxa').value||'0')/100;
-    const total = pessoas * (vlr * (1+taxa));
-    $('#calcSaida').textContent = `Total c/ taxa p/ ${pessoas} pessoas: ${fmtBR(total)}`;
-    return total;
+// Inicial
+addDataRow();
+addEntradaRow();
+$('#btnAddData').onclick=()=>addDataRow();
+$('#btnAddEntrada').onclick=()=>addEntradaRow();
+
+function montarPDF(){
+  $('#pdfDataHora').textContent = 'Gerado em ' + new Date().toLocaleString('pt-BR');
+  $('#pdfLocal').textContent = 'Local: ' + ($('#localGeracao').value||'—');
+  $('#p_evento').textContent = $('#evento').value||'—';
+  const datas = getDatas();
+  $('#p_datas').textContent = datas.length ? datas.map(d=> new Date(d+'T00:00:00').toLocaleDateString('pt-BR')).join(', ') : '—';
+  $('#p_hora').textContent = $('#hora').value||'—';
+  $('#p_sala').textContent = $('#sala').value||'—';
+  $('#p_pessoas').textContent = $('#pessoas').value||'—';
+
+  const ul=$('#p_entradas'); ul.innerHTML='';
+  const itens=getEntradas();
+  if(itens.length){ itens.forEach(t=>{ const li=document.createElement('li'); li.textContent=t; ul.appendChild(li); }); }
+  $('#p_principais').textContent = ($('#principais').value||'').split('\n').filter(Boolean).join('; ');
+  $('#p_acompanhamentos').textContent = ($('#acompanhamentos').value||'').split('\n').filter(Boolean).join('; ');
+  $('#p_sobremesas').textContent = ($('#sobremesas').value||'').split('\n').filter(Boolean).join('; ');
+  $('#p_bebidas').textContent = ($('#bebidas').value||'').split('\n').filter(Boolean).join('; ');
+
+  const vlr = parseFloat($('#valorPessoa').value||'0');
+  const taxa = parseFloat($('#taxa').value||'0');
+  const pessoas = parseInt($('#pessoas').value||'0',10);
+  const total = pessoas * (vlr * (1 + (taxa/100)));
+  $('#p_valorPessoa').textContent = isNaN(vlr)? '—' : vlr.toLocaleString('pt-BR',{style:'currency',currency:'BRL'});
+  $('#p_taxa').textContent = isNaN(taxa)? '—' : (taxa.toLocaleString('pt-BR') + '%');
+  $('#p_total').textContent = isNaN(total)? '—' : total.toLocaleString('pt-BR',{style:'currency',currency:'BRL'});
+  const aluguel = parseFloat($('#aluguel').value||'');
+  $('#p_aluguel').textContent = isNaN(aluguel)? '—' : aluguel.toLocaleString('pt-BR',{style:'currency',currency:'BRL'});
+}
+
+async function gerarPDF(){
+  montarPDF();
+  const area=$('#pdf-area');
+  area.style.display='';
+  const canvas=await html2canvas(area,{scale:2, background:'#ffffff'});
+  const img=canvas.toDataURL('image/png');
+  const {jsPDF}=window.jspdf;
+  const pdf=new jsPDF('p','pt','a4');
+  const w=pdf.internal.pageSize.getWidth();
+  const h=(canvas.height* w)/canvas.width;
+  pdf.addImage(img,'PNG',0,0,w,h,'','FAST');
+  lastPdfBlob=pdf.output('blob');
+  lastPdfName='Proposta_Mercatto.pdf';
+  $('#btnBaixar').disabled=false;
+  $('#btnWhats').disabled=false;
+  area.style.display='none';
+}
+
+$('#btnGerar').onclick=gerarPDF;
+$('#btnBaixar').onclick=()=>{
+  if(!lastPdfBlob) return;
+  const a=document.createElement('a');
+  const url=URL.createObjectURL(lastPdfBlob);
+  a.href=url; a.download=lastPdfName; a.click();
+  setTimeout(()=>URL.revokeObjectURL(url),3000);
+};
+$('#btnWhats').onclick=async()=>{
+  if(!lastPdfBlob) return;
+  const file = new File([lastPdfBlob], lastPdfName, {type:'application/pdf'});
+  if(navigator.canShare && navigator.canShare({files:[file]})){
+    try{ await navigator.share({files:[file], title:'Proposta Mercatto Delícia', text:'Segue proposta em PDF.'}); return; }catch(e){}
   }
-  $('#btnCalcular').addEventListener('click', calcularTotal);
-
-  // ====== SEÇÕES PERSONALIZADAS ======
-  const secoesWrap = $('#secoesWrap');
-  const p_secoes = $('#p_secoes');
-  function addSecao(titulo=''){
-    const id = 'sec_'+Date.now()+Math.random().toString(36).slice(2,7);
-    const el = document.createElement('div');
-    el.className = 'section';
-    el.dataset.id = id;
-    el.innerHTML = `
-      <div class="row">
-        <div style="flex:1">
-          <label>Título da seção</label>
-          <input class="sec-titulo" placeholder="Ex.: Entradas" value="${titulo||''}">
-        </div>
-        <div>
-          <label>&nbsp;</label>
-          <button class="btn danger" data-act="rem">Remover</button>
-        </div>
-      </div>
-      <div class="row" style="margin-top:8px">
-        <div style="flex:1">
-          <label>Itens (um por linha; deixe em branco para preencher depois)</label>
-          <textarea class="sec-itens" placeholder="Ex.:\nCoxinha\nFritas\nPastel\n..."></textarea>
-        </div>
-      </div>`;
-    el.addEventListener('click', (e)=>{
-      const act = e.target?.dataset?.act;
-      if(act==='rem') el.remove();
-    });
-    secoesWrap.appendChild(el);
-  }
-  $('#btnAddSec').addEventListener('click', ()=>{
-    const t = $('#secTitulo').value.trim();
-    addSecao(t);
-    $('#secTitulo').value='';
-  });
-  function collectSecoes(){
-    return $$('#secoesWrap .section').map(sec=>({
-      id: sec.dataset.id,
-      titulo: sec.querySelector('.sec-titulo').value.trim(),
-      itens: sec.querySelector('.sec-itens').value.split('\n').map(s=>s.trim()).filter(Boolean)
-    }));
-  }
-  function renderSecoesToPDF(){
-    if(!p_secoes) return;
-    const sections = collectSecoes();
-    p_secoes.innerHTML = '';
-    sections.forEach(s=>{
-      const box = document.createElement('div');
-      box.style.margin = '10px 0';
-      const h = document.createElement('div');
-      h.className = 'section-highlight';
-      h.textContent = s.titulo || 'Seção';
-      box.appendChild(h);
-      if(s.itens.length){
-        const ul = document.createElement('ul');
-        ul.style.margin = '8px 0 0 18px';
-        s.itens.forEach(it=>{ const li=document.createElement('li'); li.textContent=it; ul.appendChild(li); });
-        box.appendChild(ul);
-      }else{
-        const p = document.createElement('div');
-        p.className = 'muted';
-        p.textContent = 'Itens a definir';
-        box.appendChild(p);
-      }
-      p_secoes.appendChild(box);
-    });
-  }
-
-  // Montar área do PDF a partir do formulário
-  function montarPDFView(){
-    $('#pdfDataHora').textContent = 'Gerado em ' + todayBR();
-    $('#pdfLocal').textContent = 'Local: ' + ($('#localGeracao').value||'—');
-
-    $('#p_evento').textContent = $('#evento').value || '—';
-    const dt = $('#data').value ? new Date($('#data').value+'T00:00:00') : null;
-    $('#p_data').textContent = dt ? dt.toLocaleDateString('pt-BR') : '—';
-    $('#p_hora').textContent = $('#hora').value || '—';
-    $('#p_sala').textContent = $('#sala').value || '—';
-    $('#p_pessoas').textContent = $('#pessoas').value || '—';
-
-    const escolhidos = Array.from(document.querySelectorAll('#listaEntradas input:checked')).map(x=>x.value);
-    $('#p_entradas').textContent = escolhidos.length? escolhidos.join('; ') : '—';
-    $('#p_obs').textContent = $('#obs').value || '';
-
-    const vlr = parseFloat($('#valorPessoa').value||'0');
-    const taxa = parseFloat($('#taxa').value||'0');
-    const totalMin = calcularTotal();
-    $('#p_vlrPessoa').textContent = fmtBR(vlr);
-    $('#p_taxa').textContent = `${taxa.toLocaleString('pt-BR')}%`;
-    $('#p_totalMin').textContent = fmtBR(totalMin);
-    $('#p_aluguel').textContent = fmtBR(parseFloat($('#aluguel').value||'0'));
-    $('#p_incluso').textContent = $('#incluso').value || '—';
-    $('#p_duracao').textContent = $('#duracao').value || '—';
-
-    $('#p_datasPac').textContent = $('#datasPacotes').value || '—';
-    $('#p_duracaoCafe').textContent = $('#duracaoCafe').value || '—';
-    $('#p_valorCafes').textContent = fmtBR(parseFloat($('#valorCafes').value||'0'));
-    $('#p_valorFechando').textContent = fmtBR(parseFloat($('#valorFechando').value||'0'));
-    $('#p_inclusoCafe').textContent = $('#inclusoCafe').value || '—';
-    $('#p_bebidas').textContent = $('#bebidas').value || '—';
-    $('#p_buffet').textContent = $('#buffet').value || '—';
-
-    $('#pdfLogo').src = logoPrev.src || '';
-
-    // Seções
-    renderSecoesToPDF();
-  }
-
-  async function gerarPDF(){
-    montarPDFView();
-    const area = document.getElementById('pdf-area');
-    area.style.display = '';
-
-    const canvas = await html2canvas(area, {scale:2, background:'#ffffff'});
-    const img = canvas.toDataURL('image/png');
-
-    const { jsPDF } = window.jspdf;
-    const pdf = new jsPDF({unit:'pt', format:'a4', compress:true});
-    const pageWidth = pdf.internal.pageSize.getWidth();
-    const margin = 24;
-    const imgWidth = pageWidth - margin*2;
-    const imgProps = { w: canvas.width, h: canvas.height };
-    const imgHeight = imgProps.h * (imgWidth / imgProps.w);
-
-    pdf.addImage(img, 'PNG', margin, margin, imgWidth, imgHeight, '', 'FAST');
-
-    const nome = `Proposta_Mercatto_${($('#evento').value||'Evento')}_${new Date().toISOString().slice(0,10)}.pdf`;
-    lastPdfBlob = pdf.output('blob');
-    lastPdfName = nome;
-
-    $('#btnBaixar').disabled = false;
-    $('#btnWhats').disabled = false;
-
-    area.style.display = 'none';
-
-    return {pdf, nome};
-  }
-
-  // Ações
-  $('#btnGerar').addEventListener('click', async()=>{
-    $('#btnGerar').disabled = true;
-    try{ await gerarPDF(); salvar(); }
-    finally{ $('#btnGerar').disabled = false; }
-  });
-
-  $('#btnBaixar').addEventListener('click', async()=>{
-    if(!lastPdfBlob){ await gerarPDF(); }
-    const a = document.createElement('a');
-    const url = URL.createObjectURL(lastPdfBlob);
-    a.href = url; a.download = lastPdfName || 'Proposta_Mercatto.pdf';
-    document.body.appendChild(a); a.click(); a.remove();
-    setTimeout(()=>URL.revokeObjectURL(url), 3000);
-  });
-
-  $('#btnWhats').addEventListener('click', async()=>{
-    if(!lastPdfBlob){ await gerarPDF(); }
-    const file = new File([lastPdfBlob], lastPdfName || 'Proposta_Mercatto.pdf', {type:'application/pdf'});
-    if(navigator.canShare && navigator.canShare({ files: [file] })){
-      try{
-        await navigator.share({ files:[file], title:'Proposta Mercatto Delícia', text:'Segue proposta em PDF.' });
-        return;
-      }catch(err){ /* cancelado */ }
-    }
-    const msg = encodeURIComponent(`Olá! Segue a proposta do evento "${$('#evento').value||''}". Baixe o PDF e anexe na conversa.`);
-    const link = `https://wa.me/?text=${msg}`;
-    window.open(link, '_blank');
-    alert('Não foi possível anexar o PDF automaticamente neste dispositivo. Baixe o arquivo e anexe manualmente no WhatsApp.');
-  });
-
-  // ====== PERSISTÊNCIA LOCAL (localStorage) ======
-  const STORE_KEY = 'mercatto_evento_propostas_v1';
-  function loadAll(){
-    try{ return JSON.parse(localStorage.getItem(STORE_KEY)||'[]'); }catch(e){ return []; }
-  }
-  function saveAll(list){ localStorage.setItem(STORE_KEY, JSON.stringify(list)); }
-  function makeRecord(){
-    return {
-      id: Date.now().toString(36)+Math.random().toString(36).slice(2),
-      createdAt: new Date().toISOString(),
-      nome: (document.querySelector('#evento').value||'Proposta')+ ' - ' + (new Date().toLocaleDateString('pt-BR')),
-      logo: document.querySelector('#logoPreview').src||'',
-      data: {
-        evento: $('#evento').value, data: $('#data').value, hora: $('#hora').value, sala: $('#sala').value,
-        pessoas: $('#pessoas').value, local: $('#localGeracao').value,
-        valorPessoa: $('#valorPessoa').value, taxa: $('#taxa').value, duracao: $('#duracao').value,
-        aluguel: $('#aluguel').value, incluso: $('#incluso').value,
-        entradasMarcadas: Array.from(document.querySelectorAll('#listaEntradas input:checked')).map(x=>x.value),
-        obs: $('#obs').value,
-        datasPacotes: $('#datasPacotes').value, duracaoCafe: $('#duracaoCafe').value,
-        valorCafes: $('#valorCafes').value, valorFechando: $('#valorFechando').value,
-        inclusoCafe: $('#inclusoCafe').value, bebidas: $('#bebidas').value, buffet: $('#buffet').value,
-        secoes: collectSecoes()
-      }
-    };
-  }
-  function applyRecord(rec){
-    const d = rec.data; if(!d) return;
-    $('#evento').value = d.evento||''; $('#data').value=d.data||''; $('#hora').value=d.hora||''; $('#sala').value=d.sala||'';
-    $('#pessoas').value=d.pessoas||''; $('#localGeracao').value=d.local||'';
-    $('#valorPessoa').value=d.valorPessoa||''; $('#taxa').value=d.taxa||''; $('#duracao').value=d.duracao||'';
-    $('#aluguel').value=d.aluguel||''; $('#incluso').value=d.incluso||'';
-    document.querySelectorAll('#listaEntradas input').forEach(cb=> cb.checked = (d.entradasMarcadas||[]).includes(cb.value));
-    $('#obs').value = d.obs||'';
-    $('#datasPacotes').value=d.datasPacotes||''; $('#duracaoCafe').value=d.duracaoCafe||'';
-    $('#valorCafes').value=d.valorCafes||''; $('#valorFechando').value=d.valorFechando||'';
-    $('#inclusoCafe').value=d.inclusoCafe||''; $('#bebidas').value=d.bebidas||''; $('#buffet').value=d.buffet||'';
-    document.querySelectorAll('#secoesWrap .section').forEach(n=>n.remove());
-    (d.secoes||[]).forEach(s=>{
-      addSecao(s.titulo);
-      const last = secoesWrap.lastElementChild;
-      last.querySelector('.sec-itens').value = (s.itens||[]).join('\n');
-    });
-    if(rec.logo){ document.querySelector('#logoPreview').src = rec.logo; document.querySelector('#pdfLogo').src = rec.logo; }
-  }
-  function salvar(){
-    const list = loadAll();
-    const rec = makeRecord();
-    list.unshift(rec);
-    saveAll(list);
-    return rec;
-  }
-
-  // UI salvar/abrir
-  $('#btnSalvar').addEventListener('click', ()=>{
-    const rec = salvar();
-    alert('Proposta salva localmente: '+ rec.nome);
-  });
-
-  const modal = document.getElementById('savedModal');
-  const listaSalvos = document.getElementById('listaSalvos');
-  function openModal(){
-    listaSalvos.innerHTML = '';
-    const list = loadAll();
-    if(!list.length){ listaSalvos.innerHTML = '<div class="muted">Nenhum item salvo ainda.</div>'; }
-    list.forEach((rec)=>{
-      const box = document.createElement('div');
-      box.style.border='1px solid var(--line)'; box.style.borderRadius='12px'; box.style.padding='10px';
-      box.innerHTML = `
-        <div class="row">
-          <div>
-            <div style=\"font-weight:700\">${rec.nome}</div>
-            <div class=\"muted\">Criado em: ${new Date(rec.createdAt).toLocaleString('pt-BR')}</div>
-          </div>
-          <div class=\"right\"></div>
-          <button class=\"btn\" data-act=\"abrir\" data-id=\"${rec.id}\">Abrir<\/button>
-          <button class=\"btn ghost\" data-act=\"dup\" data-id=\"${rec.id}\">Duplicar<\/button>
-          <button class=\"btn danger\" data-act=\"del\" data-id=\"${rec.id}\">Excluir<\/button>
-        </div>`;
-      box.addEventListener('click', (e)=>{
-        const act = e.target?.dataset?.act; const id = e.target?.dataset?.id; if(!act||!id) return;
-        const list = loadAll();
-        const i = list.findIndex(r=>r.id===id);
-        if(i<0) return;
-        if(act==='abrir'){ applyRecord(list[i]); modal.style.display='none'; }
-        if(act==='dup'){ const copy = JSON.parse(JSON.stringify(list[i])); copy.id = Date.now().toString(36); copy.createdAt=new Date().toISOString(); list.unshift(copy); saveAll(list); openModal(); }
-        if(act==='del'){ if(confirm('Excluir esta proposta definitivamente?')){ list.splice(i,1); saveAll(list); openModal(); } }
-      });
-      listaSalvos.appendChild(box);
-    });
-    modal.style.display='flex';
-  }
-  $('#btnAbrirSalvos').addEventListener('click', openModal);
-  $('#btnFecharModal').addEventListener('click', ()=> modal.style.display='none');
-})();
+  const msg = encodeURIComponent('Segue proposta em PDF.');
+  window.open('https://wa.me/?text='+msg,'_blank');
+};
 </script>
 </body>
 </html>
