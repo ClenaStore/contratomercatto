@@ -5,10 +5,10 @@
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
 <title>Painel • Proposta de Evento (PDF + WhatsApp)</title>
 <!-- INSTRUÇÕES
-1) Troque a LOGO no topo (arquivo ou URL) — procure por LOGO_DO_MERCATTO_AQUI
+1) Troque a LOGO no topo (arquivo ou URL) — procure por LOGO_DO_MERCATTO_AQUI (atribua no src dos <img> logoPreview/pdfLogo)
 2) Troque o ENDEREÇO no PDF — procure por ENDERECO_MERCATTO_AQUI
-3) As "Seções personalizadas" permitem criar cabeçalhos (Entradas, Pratos Principais, etc.) com itens em branco.
-4) Clique em Salvar para guardar localmente (localStorage) e Abrir salvos para reabrir/editar depois.
+3) Use "Seções personalizadas" para criar blocos (Entradas, Pratos Principais, etc.). Os itens começam EM BRANCO com exemplos no placeholder.
+4) Clique em Salvar para guardar localmente e Abrir salvos para reabrir/editar.
 -->
 <style>
   :root{
@@ -41,9 +41,8 @@
   .chip{padding:6px 10px;border:1px solid var(--line);border-radius:40px;background:#0e121a}
   .right{margin-left:auto}
   .muted{color:var(--muted);font-size:.9rem}
-  .list{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
   .hr{height:1px;background:var(--line);margin:10px 0}
-  /* Área a ser exportada em PDF */
+  /* Área do PDF */
   #pdf-area{background:#ffffff;color:#0b0b0e;border:1px solid #e5e7eb;border-radius:12px;padding:24px}
   #pdf-area h2{margin:0 0 6px}
   #pdf-area .muted{color:#4b5563}
@@ -52,9 +51,7 @@
   #pdf-area table{width:100%;border-collapse:collapse;margin-top:6px}
   #pdf-area th,#pdf-area td{border:1px solid #e5e7eb;padding:8px;text-align:left}
   #pdf-area .t-right{text-align:right}
-  .footnote{font-size:.85rem;color:#475569;margin-top:10px}
   .notice{padding:8px 12px;border-left:4px solid #3b82f6;background:#eff6ff;color:#1e3a8a;border-radius:8px}
-  /* Destaque de seções no PDF */
   .section-highlight{background:#f1f5ff;border:1px solid #c7d2fe;color:#1e3a8a;padding:6px 10px;border-radius:10px;font-weight:700}
   .section{border:1px dashed var(--line);border-radius:12px;padding:12px;margin-top:10px}
   .section .row{align-items:flex-start}
@@ -64,7 +61,7 @@
 <div class="wrap">
   <header>
     <div class="brand">
-      <!-- LOGO_DO_MERCATTO_AQUI: Substitua o src abaixo pela URL do arquivo da LOGO -->
+      <!-- LOGO_DO_MERCATTO_AQUI: defina o src abaixo com a URL/arquivo da sua logo -->
       <img id="logoPreview" src="" alt="Logo Mercatto Delícia"/>
       <div>
         <h1>Proposta de Evento • Mercatto Delícia</h1>
@@ -72,7 +69,7 @@
       </div>
     </div>
     <div class="row">
-      <input type="file" id="logoFile" accept="image/*"/>
+      <!-- Removido: upload de logo -->
       <button class="btn ghost" id="btnExemplo">Preencher com exemplo</button>
     </div>
   </header>
@@ -84,16 +81,17 @@
         <label>Evento</label>
         <input id="evento" placeholder="Ex.: Lucas"/>
       </div>
-      <div>
-        <label>Data</label>
-        <input id="data" type="date"/>
+      <div style="grid-column:span 2">
+        <label>Datas do evento (uma ou mais)</label>
+        <div id="datasWrap" style="display:grid;gap:8px"></div>
+        <button class="btn" id="btnAddData" type="button">+ Adicionar data</button>
       </div>
+    </div>
+    <div class="grid g3" style="margin-top:10px">
       <div>
         <label>Hora</label>
         <input id="hora" type="time"/>
       </div>
-    </div>
-    <div class="grid g3" style="margin-top:10px">
       <div>
         <label>Sala</label>
         <input id="sala" placeholder="Ex.: Sala VIP 01"/>
@@ -102,13 +100,23 @@
         <label>Pessoas (mínimo)</label>
         <input id="pessoas" type="number" min="1" value="50"/>
       </div>
+    </div>
+    <div class="grid g3" style="margin-top:10px">
       <div>
         <label>Local de geração (cidade/loja)</label>
         <input id="localGeracao" placeholder="Ex.: Salvador/BA"/>
       </div>
+      <div>
+        <label>Duração do pacote</label>
+        <input id="duracao" placeholder="Ex.: 2h" value="2hrs"/>
+      </div>
+      <div>
+        <label>Incluso</label>
+        <input id="incluso" placeholder="Sala exclusiva, garçom, som, TV 86”, microfone sem fio"/>
+      </div>
     </div>
     <div class="hr"></div>
-    <div class="grid g2">
+    <div class="grid g3">
       <div>
         <label>Valor por pessoa (R$)</label>
         <input id="valorPessoa" type="number" step="0.01" value="69.90"/>
@@ -117,42 +125,14 @@
         <label>Taxa adicional (%)</label>
         <input id="taxa" type="number" step="0.01" value="10"/>
       </div>
-    </div>
-    <div class="grid g3" style="margin-top:10px">
-      <div>
-        <label>Duração do pacote</label>
-        <input id="duracao" placeholder="Ex.: 2h" value="2hrs"/>
-      </div>
       <div>
         <label>Opção alternativa (aluguel espaço) – R$</label>
         <input id="aluguel" type="number" step="0.01" value="2500"/>
       </div>
-      <div>
-        <label>Incluso</label>
-        <input id="incluso" placeholder="Sala exclusiva, garçom, som, TV 86”, microfone sem fio"/>
-      </div>
     </div>
   </div>
 
-  <div class="card">
-    <div class="section-title">Entradas servidas na palestra (atalhos)</div>
-    <div class="list" id="listaEntradas">
-      <label><input type="checkbox" value="Suco de laranja"/> Suco de laranja</label>
-      <label><input type="checkbox" value="Água"/> Água</label>
-      <label><input type="checkbox" value="Refrigerantes (Coca/Guaraná)"/> Refrigerantes (Coca/Guaraná)</label>
-      <label><input type="checkbox" value="Salgadinhos"/> Salgadinhos</label>
-      <label><input type="checkbox" value="Coxinha"/> Coxinha</label>
-      <label><input type="checkbox" value="Fritas"/> Fritas</label>
-      <label><input type="checkbox" value="Pastel"/> Pastel</label>
-      <label><input type="checkbox" value="Frios"/> Frios</label>
-      <label><input type="checkbox" value="Pão de queijo"/> Pão de queijo</label>
-      <label><input type="checkbox" value="Biscoitos"/> Biscoitos</label>
-    </div>
-    <div style="margin-top:10px">
-      <label>Observações / Itens extras</label>
-      <textarea id="obs"></textarea>
-    </div>
-  </div>
+  <!-- Removido o card de "Entradas (atalhos)" com checkboxes -->
 
   <div class="card">
     <div class="section-title">Pacotes – Café (manhã/tarde)</div>
@@ -185,11 +165,11 @@
     <div class="grid g2">
       <div>
         <label>Bebidas</label>
-        <textarea id="bebidas">Café; Leite; Suco de laranja; Água; Refrigerantes (Coca/Guaraná)</textarea>
+        <textarea id="bebidas" placeholder="Ex.: Café; Leite; Suco de laranja; Água; Refrigerantes (Coca/Guaraná)"></textarea>
       </div>
       <div>
         <label>Buffet</label>
-        <textarea id="buffet">Farofa de carne de sol; Farofa de calabresa com queijo; Salsicha; Calabresa acebolada; Ovos mexidos; Frango desfiado; Banana frita; Salgadinhos (coxinha, quibe, pastel de carne); Sanduíches (pães francês, forma, delícia, brioche, integral) – recheios: frango, mortadela, presunto, requeijão, peito de peru; Salada de frutas; Tábua de frios (presunto, peito de peru, mussarela, queijo branco); Patês diversos; Manteiga; Fritas; Pães diversos; Pão de queijo e biscoitos; Roscas diversas; Bolos simples e de cobertura; Tortas recheadas e confeitadas; Pavê de chocolate; Omelete de frios; Toast de fermentação natural; Croissant (frango/peito de peru/presunto); Pão italiano de frios premium; Tábua de frios premium (acrescenta salaminho, polenguinho, uvas); Brigadeiro e beijinho.</textarea>
+        <textarea id="buffet" placeholder="Ex.: Farofa de carne de sol; Calabresa acebolada; Ovos mexidos; Frango desfiado; Banana frita; ..."></textarea>
       </div>
     </div>
   </div>
@@ -197,7 +177,7 @@
   <!-- Seções personalizadas -->
   <div class="card">
     <div class="section-title">Seções personalizadas (cabeçalhos + itens)</div>
-    <div class="muted">Crie blocos como <em>Entradas</em>, <em>Pratos Principais</em>, <em>Bebidas</em>, etc. Os itens iniciam em branco para preencher aos poucos e sairão destacados no PDF.</div>
+    <div class="muted">Crie blocos como <em>Entradas</em>, <em>Pratos Principais</em>, <em>Bebidas</em>, etc. Os itens iniciam em branco. <br/>Exemplos dentro do campo: <code>Coxinha</code>, <code>Fritas</code>, <code>Pastel</code> (um por linha).</div>
     <div class="row" style="margin-top:8px">
       <input id="secTitulo" placeholder="Ex.: Entradas ou Pratos principais"/>
       <button class="btn" id="btnAddSec">Adicionar seção</button>
@@ -219,7 +199,7 @@
     <div class="muted" style="margin-top:8px">O PDF inclui logo, endereço, data/hora e local de geração automaticamente. Os dados podem ser salvos localmente e reabertos depois.</div>
   </div>
 
-  <!-- Área oculta que será renderizada no PDF -->
+  <!-- Área oculta para o PDF -->
   <div id="pdf-area" class="card" style="display:none">
     <div style="display:flex;align-items:center;gap:12px">
       <img id="pdfLogo" src="" alt="Logo" style="height:48px;width:auto;border:1px solid #e5e7eb;border-radius:8px;background:#fff"/>
@@ -236,15 +216,14 @@
     <div class="hr"></div>
 
     <div class="kv"><strong>Evento</strong><div id="p_evento">—</div></div>
-    <div class="kv"><strong>Data</strong><div id="p_data">—</div></div>
+    <div class="kv"><strong>Datas</strong><div id="p_datas">—</div></div>
     <div class="kv"><strong>Hora</strong><div id="p_hora">—</div></div>
     <div class="kv"><strong>Sala</strong><div id="p_sala">—</div></div>
     <div class="kv"><strong>Pessoas (mínimo)</strong><div id="p_pessoas">—</div></div>
 
     <div class="hr"></div>
-    <h3 style="margin:6px 0">Entradas da Palestra</h3>
-    <div id="p_entradas">—</div>
-    <div class="footnote" id="p_obs"></div>
+    <h3 style="margin:6px 0">Seções do Evento</h3>
+    <div id="p_secoes"></div>
 
     <div class="hr"></div>
     <h3 style="margin:6px 0">Valores</h3>
@@ -257,12 +236,8 @@
         <tr><td>Opção alternativa: aluguel do espaço (2h, sem comidas/bebidas)</td><td class="t-right" id="p_aluguel">—</td></tr>
       </tbody>
     </table>
-    <div class="footnote">Incluso: <span id="p_incluso">—</span>. Duração do pacote: <span id="p_duracao">—</span>.</div>
-
-    <div class="hr"></div>
-    <h3 style="margin:6px 0">Pacotes – Café</h3>
-    <div class="kv"><strong>Datas sugeridas</strong><div id="p_datasPac">—</div></div>
-    <div class="kv"><strong>Duração</strong><div id="p_duracaoCafe">—</div></div>
+    <div class="kv"><strong>Datas sugeridas (café)</strong><div id="p_datasPac">—</div></div>
+    <div class="kv"><strong>Duração (café)</strong><div id="p_duracaoCafe">—</div></div>
     <table>
       <thead><tr><th>Descrição</th><th class="t-right">Valor (R$)</th></tr></thead>
       <tbody>
@@ -270,14 +245,9 @@
         <tr><td>Fechando 5 datas</td><td class="t-right" id="p_valorFechando">—</td></tr>
       </tbody>
     </table>
-    <div class="kv"><strong>Incluso</strong><div id="p_inclusoCafe">—</div></div>
+    <div class="kv"><strong>Incluso (café)</strong><div id="p_inclusoCafe">—</div></div>
     <div class="kv"><strong>Bebidas</strong><div id="p_bebidas">—</div></div>
     <div class="kv"><strong>Buffet</strong><div id="p_buffet">—</div></div>
-
-    <!-- Seções renderizadas no PDF -->
-    <div class="hr"></div>
-    <h3 style="margin:6px 0">Seções do Evento</h3>
-    <div id="p_secoes"></div>
 
     <div class="hr"></div>
     <div class="notice">Valores e itens sujeitos a disponibilidade. Proposta gerada eletronicamente, válida por 7 dias.</div>
@@ -315,47 +285,32 @@
   };
   let lastPdfBlob = null, lastPdfName = null;
 
-  // LOGO preview & uso no PDF
-  const logoFile = $('#logoFile');
-  const logoPrev = $('#logoPreview');
-  const pdfLogo = $('#pdfLogo');
-  logoFile.addEventListener('change', (e)=>{
-    const file = e.target.files[0];
-    if(!file) return;
-    const reader = new FileReader();
-    reader.onload = ()=>{ logoPrev.src = reader.result; pdfLogo.src = reader.result; };
-    reader.readAsDataURL(file);
-  });
-
-  // Preencher com EXEMPLO do enunciado
+  // Preencher com EXEMPLO
   $('#btnExemplo').addEventListener('click', ()=>{
     $('#evento').value = 'Lucas';
-    $('#data').value = '2025-09-02';
+    // datas múltiplas (exemplo)
+    $('#datasWrap').innerHTML='';
+    addDataRow('2025-09-02');
+    addDataRow('2025-10-03');
     $('#hora').value = '19:00';
     $('#sala').value = 'Sala VIP 01';
     $('#pessoas').value = 50;
-    document.querySelectorAll('#listaEntradas input[type=checkbox]').forEach((cb)=>{
-      const want = ['Suco de laranja','Água','Refrigerantes (Coca/Guaraná)','Salgadinhos','Coxinha','Fritas','Pastel','Frios','Pão de queijo','Biscoitos'];
-      cb.checked = want.includes(cb.value);
-    });
     $('#valorPessoa').value = 69.90;
     $('#taxa').value = 10;
     $('#duracao').value = '2hrs';
     $('#aluguel').value = 2500;
     $('#incluso').value = 'Sala exclusiva, garçom, som, TV 86”, microfone sem fio';
-    $('#obs').value = '';
     $('#datasPacotes').value = '02-03/10, 27-28/10';
     $('#duracaoCafe').value = '1h30';
     $('#valorCafes').value = 21120;
     $('#valorFechando').value = 22854;
     $('#inclusoCafe').value = 'Sala exclusiva, garçom, som, TV 86”, microfone sem fio';
-    $('#bebidas').value = 'Café; Leite; Suco de laranja; Água; Refrigerantes (Coca/Guaraná)';
-    $('#buffet').value = 'Farofa de carne de sol; Farofa de calabresa com queijo; Salsicha; Calabresa acebolada; Ovos mexidos; Frango desfiado; Banana frita; Salgadinhos (coxinha, quibe, pastel de carne); Sanduíches (pães francês, forma, delícia, brioche, integral) – recheios: frango, mortadela, presunto, requeijão, peito de peru; Salada de frutas; Tábua de frios (presunto, peito de peru, mussarela, queijo branco); Patês diversos; Manteiga; Fritas; Pães diversos; Pão de queijo e biscoitos; Roscas diversas; Bolos simples e de cobertura; Tortas recheadas e confeitadas; Pavê de chocolate; Omelete de frios; Toast de fermentação natural; Croissant (frango/peito de peru/presunto); Pão italiano de frios premium; Tábua de frios premium (acrescenta salaminho, polenguinho, uvas); Brigadeiro e beijinho.';
-    // Seções exemplo em branco
+    $('#bebidas').value = '';
+    $('#buffet').value = '';
+    // seções exemplo (vazias, com placeholders)
     document.querySelectorAll('#secoesWrap .section').forEach(n=>n.remove());
     addSecao('Entradas');
     addSecao('Pratos Principais');
-    addSecao('Bebidas');
   });
 
   // Cálculo
@@ -368,6 +323,19 @@
     return total;
   }
   $('#btnCalcular').addEventListener('click', calcularTotal);
+
+  // ====== DATAS MÚLTIPLAS ======
+  function addDataRow(val=''){
+    const row=document.createElement('div');
+    row.className='row';
+    row.innerHTML=`<input type="date" class="data-item" value="${val}"> <button class="btn warn" type="button">Remover</button>`;
+    row.querySelector('button').onclick=()=>row.remove();
+    $('#datasWrap').appendChild(row);
+  }
+  function getDatas(){ return $$('#datasWrap .data-item').map(i=>i.value).filter(Boolean); }
+  $('#btnAddData').addEventListener('click', ()=>addDataRow());
+  // cria pelo menos uma
+  addDataRow();
 
   // ====== SEÇÕES PERSONALIZADAS ======
   const secoesWrap = $('#secoesWrap');
@@ -390,31 +358,19 @@
       </div>
       <div class="row" style="margin-top:8px">
         <div style="flex:1">
-          <label>Itens (um por linha; deixe em branco para preencher depois)</label>
-          <textarea class="sec-itens" placeholder="Ex.:
-Coxinha
-Fritas
-Pastel
-..."></textarea>
+          <label>Itens (um por linha)</label>
+          <textarea class="sec-itens" placeholder="Ex.:\nCoxinha\nFritas\nPastel\n..."></textarea>
         </div>
       </div>`;
-    el.addEventListener('click', (e)=>{
-      const act = e.target?.dataset?.act;
-      if(act==='rem') el.remove();
-    });
+    el.addEventListener('click', (e)=>{ if(e.target?.dataset?.act==='rem') el.remove(); });
     secoesWrap.appendChild(el);
   }
-  $('#btnAddSec').addEventListener('click', ()=>{
-    const t = $('#secTitulo').value.trim();
-    addSecao(t);
-    $('#secTitulo').value='';
-  });
+  $('#btnAddSec').addEventListener('click', ()=>{ const t=$('#secTitulo').value.trim(); addSecao(t); $('#secTitulo').value=''; });
   function collectSecoes(){
     return $$('#secoesWrap .section').map(sec=>({
       id: sec.dataset.id,
       titulo: sec.querySelector('.sec-titulo').value.trim(),
-      itens: sec.querySelector('.sec-itens').value.split('
-').map(s=>s.trim()).filter(Boolean)
+      itens: sec.querySelector('.sec-itens').value.split('\n').map(s=>s.trim()).filter(Boolean)
     }));
   }
   function renderSecoesToPDF(){
@@ -443,43 +399,37 @@ Pastel
     });
   }
 
-  // Montar área do PDF a partir do formulário
+  // Montagem do PDF
   function montarPDFView(){
     $('#pdfDataHora').textContent = 'Gerado em ' + todayBR();
     $('#pdfLocal').textContent = 'Local: ' + ($('#localGeracao').value||'—');
 
     $('#p_evento').textContent = $('#evento').value || '—';
-    const dt = $('#data').value ? new Date($('#data').value+'T00:00:00') : null;
-    $('#p_data').textContent = dt ? dt.toLocaleDateString('pt-BR') : '—';
+    const datas = getDatas();
+    const datasFmt = datas.map(d=>{ try{ return new Date(d+'T00:00:00').toLocaleDateString('pt-BR'); }catch(e){ return d; } });
+    $('#p_datas').textContent = datasFmt.length? datasFmt.join(', ') : '—';
     $('#p_hora').textContent = $('#hora').value || '—';
     $('#p_sala').textContent = $('#sala').value || '—';
     $('#p_pessoas').textContent = $('#pessoas').value || '—';
-
-    const escolhidos = Array.from(document.querySelectorAll('#listaEntradas input:checked')).map(x=>x.value);
-    $('#p_entradas').textContent = escolhidos.length? escolhidos.join('; ') : '—';
-    $('#p_obs').textContent = $('#obs').value || '';
 
     const vlr = parseFloat($('#valorPessoa').value||'0');
     const taxa = parseFloat($('#taxa').value||'0');
     const totalMin = calcularTotal();
     $('#p_vlrPessoa').textContent = fmtBR(vlr);
-    $('#p_taxa').textContent = `${taxa.toLocaleString('pt-BR')}%`;
+    $('#p_taxa').textContent = `${isNaN(taxa)?'0':taxa.toLocaleString('pt-BR')}%`;
     $('#p_totalMin').textContent = fmtBR(totalMin);
     $('#p_aluguel').textContent = fmtBR(parseFloat($('#aluguel').value||'0'));
-    $('#p_incluso').textContent = $('#incluso').value || '—';
-    $('#p_duracao').textContent = $('#duracao').value || '—';
-
+    $('#p_inclusoCafe').textContent = $('#inclusoCafe').value || '—';
     $('#p_datasPac').textContent = $('#datasPacotes').value || '—';
     $('#p_duracaoCafe').textContent = $('#duracaoCafe').value || '—';
     $('#p_valorCafes').textContent = fmtBR(parseFloat($('#valorCafes').value||'0'));
     $('#p_valorFechando').textContent = fmtBR(parseFloat($('#valorFechando').value||'0'));
-    $('#p_inclusoCafe').textContent = $('#inclusoCafe').value || '—';
     $('#p_bebidas').textContent = $('#bebidas').value || '—';
     $('#p_buffet').textContent = $('#buffet').value || '—';
 
-    $('#pdfLogo').src = logoPrev.src || '';
+    // logo do PDF usa o mesmo src do preview (defina no HTML)
+    document.getElementById('pdfLogo').src = document.getElementById('logoPreview').src || '';
 
-    // Seções
     renderSecoesToPDF();
   }
 
@@ -487,82 +437,39 @@ Pastel
     montarPDFView();
     const area = document.getElementById('pdf-area');
     area.style.display = '';
-
     const canvas = await html2canvas(area, {scale:2, background:'#ffffff'});
     const img = canvas.toDataURL('image/png');
-
     const { jsPDF } = window.jspdf;
     const pdf = new jsPDF({unit:'pt', format:'a4', compress:true});
     const pageWidth = pdf.internal.pageSize.getWidth();
     const margin = 24;
     const imgWidth = pageWidth - margin*2;
-    const imgProps = { w: canvas.width, h: canvas.height };
-    const imgHeight = imgProps.h * (imgWidth / imgProps.w);
-
+    const imgHeight = canvas.height * (imgWidth / canvas.width);
     pdf.addImage(img, 'PNG', margin, margin, imgWidth, imgHeight, '', 'FAST');
-
     const nome = `Proposta_Mercatto_${($('#evento').value||'Evento')}_${new Date().toISOString().slice(0,10)}.pdf`;
     lastPdfBlob = pdf.output('blob');
     lastPdfName = nome;
-
-    $('#btnBaixar').disabled = false;
-    $('#btnWhats').disabled = false;
-
+    document.getElementById('btnBaixar').disabled = false;
+    document.getElementById('btnWhats').disabled = false;
     area.style.display = 'none';
-
     return {pdf, nome};
   }
 
-  // Ações
-  $('#btnGerar').addEventListener('click', async()=>{
-    $('#btnGerar').disabled = true;
-    try{ await gerarPDF(); salvar(); }
-    finally{ $('#btnGerar').disabled = false; }
-  });
-
-  $('#btnBaixar').addEventListener('click', async()=>{
-    if(!lastPdfBlob){ await gerarPDF(); }
-    const a = document.createElement('a');
-    const url = URL.createObjectURL(lastPdfBlob);
-    a.href = url; a.download = lastPdfName || 'Proposta_Mercatto.pdf';
-    document.body.appendChild(a); a.click(); a.remove();
-    setTimeout(()=>URL.revokeObjectURL(url), 3000);
-  });
-
-  $('#btnWhats').addEventListener('click', async()=>{
-    if(!lastPdfBlob){ await gerarPDF(); }
-    const file = new File([lastPdfBlob], lastPdfName || 'Proposta_Mercatto.pdf', {type:'application/pdf'});
-    if(navigator.canShare && navigator.canShare({ files: [file] })){
-      try{
-        await navigator.share({ files:[file], title:'Proposta Mercatto Delícia', text:'Segue proposta em PDF.' });
-        return;
-      }catch(err){ /* cancelado */ }
-    }
-    const msg = encodeURIComponent(`Olá! Segue a proposta do evento "${$('#evento').value||''}". Baixe o PDF e anexe na conversa.`);
-    const link = `https://wa.me/?text=${msg}`;
-    window.open(link, '_blank');
-    alert('Não foi possível anexar o PDF automaticamente neste dispositivo. Baixe o arquivo e anexe manualmente no WhatsApp.');
-  });
-
-  // ====== PERSISTÊNCIA LOCAL (localStorage) ======
+  // ====== PERSISTÊNCIA LOCAL ======
   const STORE_KEY = 'mercatto_evento_propostas_v1';
-  function loadAll(){
-    try{ return JSON.parse(localStorage.getItem(STORE_KEY)||'[]'); }catch(e){ return []; }
-  }
+  function loadAll(){ try{ return JSON.parse(localStorage.getItem(STORE_KEY)||'[]'); }catch(e){ return []; } }
   function saveAll(list){ localStorage.setItem(STORE_KEY, JSON.stringify(list)); }
   function makeRecord(){
     return {
       id: Date.now().toString(36)+Math.random().toString(36).slice(2),
       createdAt: new Date().toISOString(),
-      nome: (document.querySelector('#evento').value||'Proposta')+ ' - ' + (new Date().toLocaleDateString('pt-BR')),
-      logo: document.querySelector('#logoPreview').src||'',
+      nome: ($('#evento').value||'Proposta')+ ' - ' + (new Date().toLocaleDateString('pt-BR')),
+      logo: (document.getElementById('logoPreview').src||''),
       data: {
-        evento: $('#evento').value, data: $('#data').value, hora: $('#hora').value, sala: $('#sala').value,
+        evento: $('#evento').value, datas: getDatas(), hora: $('#hora').value, sala: $('#sala').value,
         pessoas: $('#pessoas').value, local: $('#localGeracao').value,
         valorPessoa: $('#valorPessoa').value, taxa: $('#taxa').value, duracao: $('#duracao').value,
         aluguel: $('#aluguel').value, incluso: $('#incluso').value,
-        entradasMarcadas: Array.from(document.querySelectorAll('#listaEntradas input:checked')).map(x=>x.value),
-        obs: $('#obs').value,
         datasPacotes: $('#datasPacotes').value, duracaoCafe: $('#duracaoCafe').value,
         valorCafes: $('#valorCafes').value, valorFechando: $('#valorFechando').value,
         inclusoCafe: $('#inclusoCafe').value, bebidas: $('#bebidas').value, buffet: $('#buffet').value,
@@ -571,39 +478,27 @@ Pastel
     };
   }
   function applyRecord(rec){
-    const d = rec.data; if(!d) return;
-    $('#evento').value = d.evento||''; $('#data').value=d.data||''; $('#hora').value=d.hora||''; $('#sala').value=d.sala||'';
+    const d = rec.data||{};
+    $('#evento').value = d.evento||''; $('#hora').value=d.hora||''; $('#sala').value=d.sala||'';
     $('#pessoas').value=d.pessoas||''; $('#localGeracao').value=d.local||'';
     $('#valorPessoa').value=d.valorPessoa||''; $('#taxa').value=d.taxa||''; $('#duracao').value=d.duracao||'';
     $('#aluguel').value=d.aluguel||''; $('#incluso').value=d.incluso||'';
-    document.querySelectorAll('#listaEntradas input').forEach(cb=> cb.checked = (d.entradasMarcadas||[]).includes(cb.value));
-    $('#obs').value = d.obs||'';
     $('#datasPacotes').value=d.datasPacotes||''; $('#duracaoCafe').value=d.duracaoCafe||'';
     $('#valorCafes').value=d.valorCafes||''; $('#valorFechando').value=d.valorFechando||'';
     $('#inclusoCafe').value=d.inclusoCafe||''; $('#bebidas').value=d.bebidas||''; $('#buffet').value=d.buffet||'';
+    // datas múltiplas (suporta legado 'data')
+    $('#datasWrap').innerHTML='';
+    const datas = Array.isArray(d.datas)? d.datas : (d.data? [d.data] : []);
+    if(!datas.length) addDataRow(); else datas.forEach(addDataRow);
+    // seções
     document.querySelectorAll('#secoesWrap .section').forEach(n=>n.remove());
-    (d.secoes||[]).forEach(s=>{
-      addSecao(s.titulo);
-      const last = secoesWrap.lastElementChild;
-      last.querySelector('.sec-itens').value = (s.itens||[]).join('
-');
-    });
-    if(rec.logo){ document.querySelector('#logoPreview').src = rec.logo; document.querySelector('#pdfLogo').src = rec.logo; }
+    (d.secoes||[]).forEach(s=>{ addSecao(s.titulo); const last=secoesWrap.lastElementChild; last.querySelector('.sec-itens').value=(s.itens||[]).join('\n'); });
+    if(rec.logo){ document.getElementById('logoPreview').src = rec.logo; document.getElementById('pdfLogo').src = rec.logo; }
   }
-  function salvar(){
-    const list = loadAll();
-    const rec = makeRecord();
-    list.unshift(rec);
-    saveAll(list);
-    return rec;
-  }
+  function salvar(){ const list=loadAll(); const rec=makeRecord(); list.unshift(rec); saveAll(list); return rec; }
 
   // UI salvar/abrir
-  $('#btnSalvar').addEventListener('click', ()=>{
-    const rec = salvar();
-    alert('Proposta salva localmente: '+ rec.nome);
-  });
-
+  document.getElementById('btnSalvar').addEventListener('click', ()=>{ const rec=salvar(); alert('Proposta salva localmente: '+rec.nome); });
   const modal = document.getElementById('savedModal');
   const listaSalvos = document.getElementById('listaSalvos');
   function openModal(){
@@ -637,8 +532,15 @@ Pastel
     });
     modal.style.display='flex';
   }
-  $('#btnAbrirSalvos').addEventListener('click', openModal);
-  $('#btnFecharModal').addEventListener('click', ()=> modal.style.display='none');
+  document.getElementById('btnAbrirSalvos').addEventListener('click', openModal);
+  document.getElementById('btnFecharModal').addEventListener('click', ()=> modal.style.display='none');
+
+  async function gerarPDF(){
+    const res = await (async()=>{ montarPDFView(); const area=document.getElementById('pdf-area'); area.style.display=''; const canvas=await html2canvas(area,{scale:2, background:'#ffffff'}); const img=canvas.toDataURL('image/png'); const {jsPDF}=window.jspdf; const pdf=new jsPDF({unit:'pt',format:'a4',compress:true}); const pageWidth=pdf.internal.pageSize.getWidth(); const margin=24; const imgWidth=pageWidth-margin*2; const imgHeight=canvas.height*(imgWidth/canvas.width); pdf.addImage(img,'PNG',margin,margin,imgWidth,imgHeight,'','FAST'); const nome=`Proposta_Mercatto_${($('#evento').value||'Evento')}_${new Date().toISOString().slice(0,10)}.pdf`; lastPdfBlob=pdf.output('blob'); lastPdfName=nome; document.getElementById('btnBaixar').disabled=false; document.getElementById('btnWhats').disabled=false; area.style.display='none'; return {pdf,nome}; })(); return res; }
+
+  document.getElementById('btnGerar').addEventListener('click', async()=>{ document.getElementById('btnGerar').disabled=true; try{ await gerarPDF(); salvar(); } finally{ document.getElementById('btnGerar').disabled=false; } });
+  document.getElementById('btnBaixar').addEventListener('click', async()=>{ if(!lastPdfBlob){ await gerarPDF(); } const a=document.createElement('a'); const url=URL.createObjectURL(lastPdfBlob); a.href=url; a.download=lastPdfName||'Proposta_Mercatto.pdf'; document.body.appendChild(a); a.click(); a.remove(); setTimeout(()=>URL.revokeObjectURL(url),3000); });
+  document.getElementById('btnWhats').addEventListener('click', async()=>{ if(!lastPdfBlob){ await gerarPDF(); } const file=new File([lastPdfBlob], lastPdfName||'Proposta_Mercatto.pdf', {type:'application/pdf'}); if(navigator.canShare && navigator.canShare({files:[file]})){ try{ await navigator.share({files:[file], title:'Proposta Mercatto Delícia', text:'Segue proposta em PDF.'}); return; }catch(err){} } const msg=encodeURIComponent(`Olá! Segue a proposta do evento "${$('#evento').value||''}". Baixe o PDF e anexe na conversa.`); const link=`https://wa.me/?text=${msg}`; window.open(link,'_blank'); alert('Não foi possível anexar o PDF automaticamente neste dispositivo. Baixe o arquivo e anexe manualmente no WhatsApp.'); });
 })();
 </script>
 </body>
