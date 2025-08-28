@@ -4,11 +4,10 @@
 <meta charset="utf-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
 <title>Painel • Proposta de Evento (PDF + WhatsApp)</title>
-<!-- INSTRUÇÕES
-1) Troque a LOGO no topo (arquivo ou URL) — procure por LOGO_DO_MERCATTO_AQUI (atribua no src dos <img> logoPreview/pdfLogo)
-2) Troque o ENDEREÇO no PDF — procure por ENDERECO_MERCATTO_AQUI
-3) Use "Seções personalizadas" para criar blocos (Entradas, Pratos Principais, etc.). Os itens começam EM BRANCO com exemplos no placeholder.
-4) Clique em Salvar para guardar localmente e Abrir salvos para reabrir/editar.
+<!-- INSTRUÇÕES (rápidas)
+1) Altere a logo e o endereço em CONFIG abaixo (logoUrl, address).
+2) Clique em "Preencher com exemplo" para ver o fluxo.
+3) Gere o PDF, baixe ou envie via WhatsApp (compartilhamento nativo ou link de texto).
 -->
 <style>
   :root{
@@ -27,7 +26,7 @@
   .g3{grid-template-columns:repeat(3,minmax(0,1fr))}
   label{display:block;font-size:.92rem;margin-bottom:6px;color:var(--muted)}
   input,select,textarea{width:100%;padding:10px 12px;border-radius:12px;border:1px solid var(--line);background:#0c0c0c;color:var(--text)}
-  textarea{min-height:90px;resize:vertical}
+  textarea{min-height:90px;resize:vertical;white-space:pre-wrap}
   .row{display:flex;gap:10px;align-items:center}
   .btn{display:inline-flex;align-items:center;gap:8px;border:1px solid var(--line);background:#0d1117;color:var(--text);padding:10px 14px;border-radius:12px;cursor:pointer}
   .btn.primary{background:var(--brand);border-color:transparent}
@@ -61,7 +60,6 @@
 <div class="wrap">
   <header>
     <div class="brand">
-      <!-- LOGO_DO_MERCATTO_AQUI: defina o src abaixo com a URL/arquivo da sua logo -->
       <img id="logoPreview" src="" alt="Logo Mercatto Delícia"/>
       <div>
         <h1>Proposta de Evento • Mercatto Delícia</h1>
@@ -69,7 +67,6 @@
       </div>
     </div>
     <div class="row">
-      <!-- Removido: upload de logo -->
       <button class="btn ghost" id="btnExemplo">Preencher com exemplo</button>
     </div>
   </header>
@@ -132,8 +129,6 @@
     </div>
   </div>
 
-  <!-- Removido o card de "Entradas (atalhos)" com checkboxes -->
-
   <div class="card">
     <div class="section-title">Pacotes – Café (manhã/tarde)</div>
     <div class="muted">Monte o buffet, datas e valores destes pacotes opcionais.</div>
@@ -165,16 +160,15 @@
     <div class="grid g2">
       <div>
         <label>Bebidas</label>
-        <textarea id="bebidas" placeholder="Ex.: Café; Leite; Suco de laranja; Água; Refrigerantes (Coca/Guaraná)"></textarea>
+        <textarea id="bebidas" placeholder="Ex.: Café\nLeite\nSuco de laranja\nÁgua\nRefrigerantes (Coca/Guaraná)"></textarea>
       </div>
       <div>
         <label>Buffet</label>
-        <textarea id="buffet" placeholder="Ex.: Farofa de carne de sol; Calabresa acebolada; Ovos mexidos; Frango desfiado; Banana frita; ..."></textarea>
+        <textarea id="buffet" placeholder="Ex.: Farofa de carne de sol\nCalabresa acebolada\nOvos mexidos\nFrango desfiado\nBanana frita\n..."></textarea>
       </div>
     </div>
   </div>
 
-  <!-- Seções personalizadas -->
   <div class="card">
     <div class="section-title">Seções personalizadas (cabeçalhos + itens)</div>
     <div class="muted">Crie blocos como <em>Entradas</em>, <em>Pratos Principais</em>, <em>Bebidas</em>, etc. Os itens iniciam em branco. <br/>Exemplos dentro do campo: <code>Coxinha</code>, <code>Fritas</code>, <code>Pastel</code> (um por linha).</div>
@@ -205,7 +199,7 @@
       <img id="pdfLogo" src="" alt="Logo" style="height:48px;width:auto;border:1px solid #e5e7eb;border-radius:8px;background:#fff"/>
       <div>
         <h2 style="margin:0">Mercatto Delícia • Proposta de Evento</h2>
-        <div class="muted">ENDERECO_MERCATTO_AQUI <!-- 👉 Substitua este texto pelo endereço do Mercatto Delícia --></div>
+        <div class="muted" id="pdfAddress">ENDERECO_MERCATTO_AQUI</div>
       </div>
       <div style="margin-left:auto;text-align:right">
         <div class="tag" id="pdfDataHora">—</div>
@@ -250,7 +244,6 @@
     <div class="kv"><strong>Buffet</strong><div id="p_buffet">—</div></div>
 
     <div class="hr"></div>
-    
   </div>
 
   <div class="muted" style="margin-top:8px">Dica: após gerar, você pode editar os campos e gerar novamente um novo PDF.</div>
@@ -275,9 +268,16 @@
 
 <script>
 (function(){
+  'use strict';
+  // ========= CONFIG RÁPIDA =========
+  const CONFIG = {
+    logoUrl: "", // 👉 coloque aqui a URL/arquivo da logo. Ex.: "https://.../logo.png"
+    address: "ENDERECO_MERCATTO_AQUI" // 👉 endereço que aparece no PDF
+  };
+
   const $ = (s)=>document.querySelector(s);
   const $$ = (s)=>Array.from(document.querySelectorAll(s));
-  const fmtBR = (n)=> (isNaN(n)? '—' : n.toLocaleString('pt-BR',{style:'currency',currency:'BRL'}));
+  const fmtBR = (n)=> (isNaN(n)? '—' : Number(n).toLocaleString('pt-BR',{style:'currency',currency:'BRL'}));
   const todayBR = ()=>{
     const now = new Date();
     const pad = (x)=> String(x).padStart(2,'0');
@@ -285,10 +285,19 @@
   };
   let lastPdfBlob = null, lastPdfName = null;
 
+  // aplica config inicial
+  function applyConfig(){
+    if(CONFIG.logoUrl){
+      $('#logoPreview').src = CONFIG.logoUrl;
+      $('#pdfLogo').src = CONFIG.logoUrl;
+    }
+    if(CONFIG.address){ $('#pdfAddress').textContent = CONFIG.address; }
+  }
+  applyConfig();
+
   // ========== EXEMPLO ==========
   $('#btnExemplo').addEventListener('click', ()=>{
     $('#evento').value = 'Lucas';
-    // datas múltiplas (exemplo)
     $('#datasWrap').innerHTML=''; addDataRow('2025-09-02'); addDataRow('2025-10-03');
     $('#hora').value = '19:00';
     $('#sala').value = 'Sala VIP 01';
@@ -297,7 +306,8 @@
     $('#aluguel').value = 2500; $('#incluso').value = 'Sala exclusiva, garçom, som, TV 86”, microfone sem fio';
     $('#datasPacotes').value = '02-03/10, 27-28/10'; $('#duracaoCafe').value = '1h30';
     $('#valorCafes').value = 21120; $('#valorFechando').value = 22854; $('#inclusoCafe').value = 'Sala exclusiva, garçom, som, TV 86”, microfone sem fio';
-    $('#bebidas').value = ''; $('#buffet').value = '';
+    $('#bebidas').value = '';
+    $('#buffet').value = '';
     // seções exemplo (vazias, com placeholders)
     $$('#secoesWrap .section').forEach(n=>n.remove());
     addSecao('Entradas');
@@ -309,7 +319,7 @@
     const pessoas = parseInt($('#pessoas').value||'0',10);
     const vlr = parseFloat($('#valorPessoa').value||'0');
     const taxa = parseFloat($('#taxa').value||'0')/100;
-    const total = pessoas * (vlr * (1+taxa));
+    const total = (pessoas>0 && vlr>=0) ? pessoas * (vlr * (1+taxa)) : 0;
     $('#calcSaida').textContent = `Total c/ taxa p/ ${pessoas||0} pessoas: ${fmtBR(total)}`;
     return total;
   }
@@ -324,8 +334,7 @@
   }
   function getDatas(){ return $$('#datasWrap .data-item').map(i=>i.value).filter(Boolean); }
   $('#btnAddData').addEventListener('click', ()=>addDataRow());
-  // cria pelo menos uma entrada ao carregar
-  addDataRow();
+  addDataRow(); // cria pelo menos uma entrada
 
   // ========== SEÇÕES PERSONALIZADAS ==========
   const secoesWrap = $('#secoesWrap');
@@ -347,25 +356,22 @@
       <div class="row" style="margin-top:8px">
         <div style="flex:1">
           <label>Itens (um por linha)</label>
-          <textarea class="sec-itens" placeholder="Ex.:
-Coxinha
-Fritas
-Pastel
-..."></textarea>
+          <textarea class="sec-itens" placeholder="Ex.:\nCoxinha\nFritas\nPastel\n..."></textarea>
         </div>
       </div>`;
     el.addEventListener('click', (e)=>{ if(e.target?.dataset?.act==='rem') el.remove(); });
     secoesWrap.appendChild(el);
   }
   $('#btnAddSec').addEventListener('click', ()=>{ const t=$('#secTitulo').value.trim(); addSecao(t); $('#secTitulo').value=''; });
+
   function collectSecoes(){
     return $$('#secoesWrap .section').map(sec=>({
       id: sec.dataset.id,
       titulo: sec.querySelector('.sec-titulo').value.trim(),
-      itens: sec.querySelector('.sec-itens').value.split('
-').map(s=>s.trim()).filter(Boolean)
+      itens: sec.querySelector('.sec-itens').value.split('\n').map(s=>s.trim()).filter(Boolean)
     }));
   }
+
   function renderSecoesToPDF(){
     if(!p_secoes) return;
     const sections = collectSecoes(); p_secoes.innerHTML = '';
@@ -388,13 +394,9 @@ Pastel
     ['evento','hora','sala','pessoas','localGeracao','valorPessoa','taxa','duracao','aluguel','incluso','datasPacotes','duracaoCafe','valorCafes','valorFechando','inclusoCafe','bebidas','buffet'].forEach(id=>{
       const el=document.getElementById(id); if(el) el.value='';
     });
-    // datas múltiplas
     const wrap=document.getElementById('datasWrap'); if(wrap){ wrap.innerHTML=''; addDataRow(); }
-    // seções personalizadas
     if(secoesWrap){ secoesWrap.innerHTML=''; }
-    // feedback/calculo
     const chip=$('#calcSaida'); if(chip){ chip.textContent='Total c/ taxa para o mínimo de pessoas: —'; }
-    // resetar último PDF e botões
     lastPdfBlob=null; lastPdfName=null; $('#btnBaixar').disabled=true; $('#btnWhats').disabled=true;
   }
 
@@ -427,7 +429,7 @@ Pastel
     $('#p_bebidas').textContent = $('#bebidas').value || '—';
     $('#p_buffet').textContent = $('#buffet').value || '—';
 
-    // logo do PDF usa o mesmo src do preview (defina no HTML)
+    // logo do PDF usa o mesmo src do preview
     $('#pdfLogo').src = $('#logoPreview').src || '';
 
     renderSecoesToPDF();
@@ -445,7 +447,7 @@ Pastel
     const imgWidth = pageWidth - margin*2;
     const imgHeight = canvas.height * (imgWidth / canvas.width);
     pdf.addImage(img, 'PNG', margin, margin, imgWidth, imgHeight, '', 'FAST');
-    const nome = `Proposta_Mercatto_${($('#evento').value||'Evento')}_${new Date().toISOString().slice(0,10)}.pdf`;
+    const nome = `Proposta_Mercatto_${(($('#evento').value||'Evento').replace(/\s+/g,'_'))}_${new Date().toISOString().slice(0,10)}.pdf`;
     lastPdfBlob = pdf.output('blob');
     lastPdfName = nome;
     $('#btnBaixar').disabled = false;
@@ -458,19 +460,12 @@ Pastel
   const STORE_KEY = 'mercatto_evento_propostas_v1';
   function loadAll(){ try{ return JSON.parse(localStorage.getItem(STORE_KEY)||'[]'); }catch(e){ return []; } }
   function saveAll(list){ localStorage.setItem(STORE_KEY, JSON.stringify(list)); }
-  function collectSecoes(){
-    return $$('#secoesWrap .section').map(sec=>({
-      id: sec.dataset.id,
-      titulo: sec.querySelector('.sec-titulo').value.trim(),
-      itens: sec.querySelector('.sec-itens').value.split('
-').map(s=>s.trim()).filter(Boolean)
-    }));
-  }
+
   function makeRecord(){
     return {
       id: Date.now().toString(36)+Math.random().toString(36).slice(2),
       createdAt: new Date().toISOString(),
-      nome: ($('#evento').value||'Proposta')+ ' - ' + (new Date().toLocaleDateString('pt-BR')),
+      nome: (($('#evento').value||'Proposta')+ ' - ' + (new Date().toLocaleDateString('pt-BR'))),
       logo: ($('#logoPreview').src||''),
       data: {
         evento: $('#evento').value, datas: getDatas(), hora: $('#hora').value, sala: $('#sala').value,
@@ -499,8 +494,7 @@ Pastel
     if(!datas.length) addDataRow(); else datas.forEach(addDataRow);
     // seções
     $$('#secoesWrap .section').forEach(n=>n.remove());
-    (d.secoes||[]).forEach(s=>{ addSecao(s.titulo); const last=secoesWrap.lastElementChild; last.querySelector('.sec-itens').value=(s.itens||[]).join('
-'); });
+    (d.secoes||[]).forEach(s=>{ addSecao(s.titulo); const last=secoesWrap.lastElementChild; last.querySelector('.sec-itens').value=(s.itens||[]).join('\n'); });
     if(rec.logo){ $('#logoPreview').src = rec.logo; $('#pdfLogo').src = rec.logo; }
   }
   function salvar(){ const list=loadAll(); const rec=makeRecord(); list.unshift(rec); saveAll(list); return rec; }
@@ -520,13 +514,13 @@ Pastel
       box.innerHTML = `
         <div class="row">
           <div>
-            <div style=\"font-weight:700\">${rec.nome}</div>
-            <div class=\"muted\">Criado em: ${new Date(rec.createdAt).toLocaleString('pt-BR')}</div>
+            <div style="font-weight:700">${rec.nome}</div>
+            <div class="muted">Criado em: ${new Date(rec.createdAt).toLocaleString('pt-BR')}</div>
           </div>
-          <div class=\"right\"></div>
-          <button class=\"btn\" data-act=\"abrir\" data-id=\"${rec.id}\">Abrir<\/button>
-          <button class=\"btn ghost\" data-act=\"dup\" data-id=\"${rec.id}\">Duplicar<\/button>
-          <button class=\"btn danger\" data-act=\"del\" data-id=\"${rec.id}\">Excluir<\/button>
+          <div class="right"></div>
+          <button class="btn" data-act="abrir" data-id="${rec.id}">Abrir</button>
+          <button class="btn ghost" data-act="dup" data-id="${rec.id}">Duplicar</button>
+          <button class="btn danger" data-act="del" data-id="${rec.id}">Excluir</button>
         </div>`;
       box.addEventListener('click', (e)=>{
         const act = e.target?.dataset?.act; const id = e.target?.dataset?.id; if(!act||!id) return;
